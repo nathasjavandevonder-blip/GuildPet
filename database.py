@@ -169,6 +169,17 @@ def init_db():
             )
             """)
 
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS adventures (
+                guild_id INTEGER PRIMARY KEY,
+                user_id INTEGER,
+                area_key TEXT,
+                started_at TEXT,
+                returns_at TEXT,
+                claimed INTEGER DEFAULT 0
+            )
+            """)
+
     execute_with_retry(work)
 
 def ensure_dragon(guild_id: int):

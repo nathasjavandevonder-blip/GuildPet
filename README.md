@@ -1,29 +1,29 @@
-# Guild Dragon Bot v3.1 Database Core
+# Guild Dragon Bot v3.2 — Dragon Adventures
 
-## What this fixes
+## New
 
-This release fixes the shop crash:
+- Dragon Adventures system
+- `/dragon_adventures`
+- `/dragon_adventure_status`
+- Adventure button on the main dragon message
+- Active adventure tracking
+- Claim adventure rewards after the dragon returns
+- Rewards:
+  - Dragon XP
+  - Guild Tokens
+  - Guild XP
+  - Memories
+- Failed adventure outcomes
+- Unlocks harder adventure areas based on dragon XP
 
-```text
-sqlite3.OperationalError: database is locked
-```
+## Adventure areas
 
-The bug happened when `shop.py` bought an item and then `memories.py` opened a second SQLite writer while the first transaction was still open.
-
-## New database layer
-
-- WAL mode
-- SQLite busy timeout
-- Retry helper for temporary locks
-- Shared transaction helper
-- `add_memory_tx()` for writing memories inside existing transactions
-- Shop purchase now writes the memory inside the same transaction
-
-## Also included
-
-- v3 Foundation project structure
-- Guild command sync in `on_ready`
-- `.gitignore` cleanup
+- 🌲 Ancient Forest
+- 🌊 Crystal Lake
+- 🏛️ Ancient Ruins
+- ⛰️ Storm Mountains
+- 🌋 Fire Volcano
+- ☁️ Sky Islands
 
 ## Update
 
@@ -39,10 +39,11 @@ sudo systemctl restart dragonbot
 journalctl -u dragonbot -n 80 --no-pager
 ```
 
-Then test buying Moss Nest again.
-
-You should see:
+Then test:
 
 ```text
-Synced X commands to guild: ...
+/dragon_adventures
+/dragon_adventure_status
 ```
+
+No database reset required.
