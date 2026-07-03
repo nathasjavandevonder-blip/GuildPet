@@ -1,31 +1,23 @@
-# Guild Dragon Bot v1.6
+# Guild Dragon Bot v1.8 Patch
 
-## New in v1.6
-- Visual asset helper commands
-- `/dragon_needed_images`
-- `/dragon_force_pose`
-- `/dragon_force_stats`
-- `/dragon_add_tokens`
-- Better image debug output
-- Admin test tools for faster development
+## Adds
+- Cleaner compact game-style embed
+- Art-first layout
+- Main stats grouped to reduce height
+- World progress moved into cleaner section
+- Dragon message made more prominent
+- Footer now shows helper commands
 
-## Setup
+## Replace these files
+- embeds.py
+- views/dragon_view.py
+
+Then commit + push.
+
+## VPS
 
 ```bash
-pip install -r requirements.txt
-python bot.py
+cd ~/bot/dragonbot
+git pull
+sudo systemctl restart dragonbot
 ```
-
-## Assets
-
-Put files like:
-
-```text
-assets/dragons/egg/idle.png
-assets/dragons/egg/eating.png
-assets/dragons/egg/sleeping.png
-assets/dragons/hatchling/idle.png
-assets/lairs/empty_cave/idle.png
-```
-
-Then restart the bot.
