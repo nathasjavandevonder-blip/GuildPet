@@ -13,12 +13,14 @@ from embeds import (
     make_world_embed,
     make_research_embed,
     make_progression_embed,
+    make_trait_embed,
 )
 from memories import add_memory
 from dragon import decay_dragon
 from events import random_event_embed, create_event_record
 from living import living_update, should_request_care, mark_care_request_sent
 from progression import prestige_guild
+from daily_gift import DailyGiftView, daily_gift_available
 from views.dragon_view import DragonView
 from views.event_view import EventView
 from views.updater import update_dragon_message
@@ -251,6 +253,14 @@ async def dragon_living_status(interaction: discord.Interaction):
         ephemeral=True
     )
 
+
+@bot.tree.command(name="dragon_trait", description="Show the dragon's permanent trait.")
+async def dragon_trait(interaction: discord.Interaction):
+    await interaction.response.send_message(
+        embed=make_trait_embed(interaction.guild.id),
+        ephemeral=True
+    )
+
 @bot.tree.command(name="dragon_profile", description="Show your dragon keeper profile.")
 async def dragon_profile(interaction: discord.Interaction, member: discord.Member = None):
     member = member or interaction.user
@@ -382,11 +392,38 @@ async def living_dragon():
                 except Exception:
                     pass
 
+
+@tasks.loop(hours=3)
+async def daily_gift_task():
+    for guild in bot.guilds:
+        if not daily_gift_available(guild.id):
+            continue
+
+        d = get_dragon(guild.id)
+        channel_id = d["channel_id"]
+
+        if not channel_id:
+            continue
+
+        channel = guild.get_channel(channel_id)
+
+        if not channel:
+            continue
+
+        try:
+            await channel.send(
+                "🎁 **Daily Guild Gift**\nThe dragon found treasure for the guild!",
+                view=DailyGiftView()
+            )
+        except Exception:
+            pass
+
 @bot.event
 async def on_ready():
     init_db()
     bot.add_view(DragonView())
     bot.add_view(EventView())
+    bot.add_view(DailyGiftView())
 
     if not dragon_decay.is_running():
         dragon_decay.start()
@@ -396,6 +433,9 @@ async def on_ready():
 
     if not living_dragon.is_running():
         living_dragon.start()
+
+    if not daily_gift_task.is_running():
+        daily_gift_task.start()
 
     await bot.tree.sync()
     print(f"Logged in as {bot.user}")

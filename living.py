@@ -3,6 +3,7 @@ from datetime import datetime, timezone, timedelta
 from database import connect, get_dragon
 from utils import is_night_utc, current_season, clamp, get_stage
 from memories import add_memory
+from traits import ensure_trait, trait_quote
 
 IDLE_POSES_DAY = [
     "waiting",
@@ -16,6 +17,20 @@ IDLE_POSES_NIGHT = [
     "sleeping",
     "guarding the lair",
     "looking around",
+]
+
+WORLD_EVENTS = [
+    ("None", "The lair is calm."),
+    ("Rainbow", "🌈 A rainbow shines near the cave."),
+    ("Butterflies", "🦋 Butterflies flutter around the dragon."),
+    ("Mushrooms", "🍄 Small glowing mushrooms grew nearby."),
+    ("Full Moon", "🌕 The moonlight fills the cave."),
+    ("Meteor Shower", "⭐ A meteor shower lights the sky."),
+    ("Heavy Rain", "🌧️ Heavy rain falls outside the lair."),
+    ("Warm Breeze", "🍃 A warm breeze moves through the cave."),
+    ("Fresh Footprints", "🐾 Fresh footprints surround the nest."),
+    ("Mysterious Feather", "🪶 A mysterious feather appeared near the dragon."),
+    ("Fruit Gift", "🍎 Someone left fruit near the cave."),
 ]
 
 CARE_REQUEST_COOLDOWN_HOURS = 6
@@ -53,43 +68,46 @@ SEASONAL_LINES = {
     ],
 }
 
-LIVING_LINES = {
-    "wake": [
-        "Good morning, keepers!",
-        "I woke up and stretched my tiny wings.",
-        "A new day begins in the lair.",
-    ],
-    "sleep": [
-        "I am getting sleepy...",
-        "I curled up in my nest.",
-        "Good night, keepers.",
-    ],
-    "hungry": [
-        "My tummy is rumbling...",
-        "Could someone bring me food?",
+MOOD_LINES = {
+    "Hungry": [
+        "My stomach is making funny noises...",
+        "Could someone bring food?",
         "I am trying to be brave, but I am hungry.",
     ],
-    "messy": [
+    "Messy": [
         "My scales feel dusty...",
         "The lair could use some cleaning.",
         "I stepped in something sticky again.",
     ],
-    "lonely": [
-        "Is anyone visiting the lair today?",
+    "Sleepy": [
+        "Five more minutes...",
+        "I am getting sleepy.",
+        "The nest looks very comfortable.",
+    ],
+    "Lonely": [
+        "Where is everybody?",
         "The cave feels quiet...",
         "I miss my keepers.",
     ],
-    "happy": [
+    "Happy": [
         "I love this guild.",
         "This place feels like home.",
         "I feel safe with my keepers.",
     ],
-    "milestone": [
-        "I feel myself growing stronger.",
-        "Something inside me is changing...",
-        "Every day, I become more like a real dragon.",
+    "Excited": [
+        "Let's explore!",
+        "Something exciting could happen today.",
+        "I feel like running around the lair!",
     ],
 }
+
+AFFECTION_EVENTS = [
+    "🐉 The dragon nuzzles {name}.",
+    "🐉 The dragon sits beside {name}.",
+    "🐉 The dragon happily circles around {name}.",
+    "🐉 The dragon rests its head near {name}.",
+    "🐉 The dragon follows {name} around the lair.",
+]
 
 def _parse_time(value):
     if not value:
@@ -105,62 +123,69 @@ def _can_send_care_request(d):
         return True
     return datetime.now(timezone.utc) - last >= timedelta(hours=CARE_REQUEST_COOLDOWN_HOURS)
 
-def choose_living_state(d):
+def dragon_mood_key(d):
+    if d["hunger"] < 25:
+        return "Hungry"
+    if d["cleanliness"] < 25:
+        return "Messy"
+    if d["energy"] < 25:
+        return "Sleepy"
+    if d["happiness"] < 30:
+        return "Lonely"
+    if d["happiness"] > 85 and d["energy"] > 60:
+        return "Excited"
+    return "Happy"
+
+def choose_world_event():
+    # Most updates are calm, sometimes a world detail appears.
+    if random.random() < 0.55:
+        return ("None", "The lair is calm.")
+    return random.choice(WORLD_EVENTS[1:])
+
+def choose_living_state(guild_id: int, d):
+    ensure_trait(guild_id)
+
     night = is_night_utc()
     season = current_season()
+    mood_key = dragon_mood_key(d)
 
     pose = random.choice(IDLE_POSES_NIGHT if night else IDLE_POSES_DAY)
     sleeping = 1 if night and random.random() < 0.75 else 0
 
-    message = None
-    reason = "idle"
+    if d["dragon_trait"] == "Lazy" and random.random() < 0.30:
+        sleeping = 1
+        pose = "sleeping"
 
     if sleeping:
-        pose = "sleeping"
-        message = random.choice(LIVING_LINES["sleep"])
-        reason = "sleep"
-    elif d["hunger"] < 25:
-        pose = "sad"
-        message = random.choice(LIVING_LINES["hungry"])
-        reason = "hungry"
-    elif d["cleanliness"] < 25:
-        pose = "sad"
-        message = random.choice(LIVING_LINES["messy"])
-        reason = "messy"
-    elif d["happiness"] < 30:
-        pose = "sad"
-        message = random.choice(LIVING_LINES["lonely"])
-        reason = "lonely"
-    elif d["bond"] > 80 and random.random() < 0.35:
-        pose = "bonding"
-        message = random.choice(LIVING_LINES["happy"])
-        reason = "happy"
-    elif random.random() < 0.30:
-        message = random.choice(SEASONAL_LINES.get(season, SEASONAL_LINES["Summer"]))
-        reason = "season"
-    else:
-        message = random.choice([
-            "I moved around the lair a little.",
-            "I watched the cave entrance quietly.",
-            "I listened to the sounds outside.",
-            "I scratched the ground near my nest.",
-            "I looked at the guild treasure pile.",
-        ])
+        return "sleeping", 1, random.choice(MOOD_LINES["Sleepy"]), "sleep"
 
-    return pose, sleeping, message, reason
+    if mood_key in ["Hungry", "Messy", "Sleepy", "Lonely"]:
+        return "sad", 0, random.choice(MOOD_LINES[mood_key]), mood_key.lower()
+
+    if random.random() < 0.22:
+        return pose, 0, trait_quote(guild_id), "trait"
+
+    if random.random() < 0.30:
+        return pose, 0, random.choice(SEASONAL_LINES.get(season, SEASONAL_LINES["Summer"])), "season"
+
+    return pose, 0, random.choice(MOOD_LINES.get(mood_key, MOOD_LINES["Happy"])), mood_key.lower()
 
 def living_update(guild_id: int):
     d = get_dragon(guild_id)
-    pose, sleeping, message, reason = choose_living_state(d)
+    pose, sleeping, message, reason = choose_living_state(guild_id, d)
+    world_event, world_text = choose_world_event()
     season = current_season()
+
+    if world_event != "None" and random.random() < 0.70:
+        message = world_text
 
     con = connect()
     cur = con.cursor()
-
     cur.execute("""
         UPDATE dragon
         SET pose=?,
             sleeping=?,
+            world_event=?,
             dragon_message=?,
             last_living_update=?,
             last_action_text=?
@@ -168,6 +193,7 @@ def living_update(guild_id: int):
     """, (
         pose,
         sleeping,
+        world_event,
         message,
         datetime.now(timezone.utc).isoformat(),
         f"🐉 The dragon is living in the lair. Season: **{season}**.",
@@ -203,9 +229,5 @@ def mark_care_request_sent(guild_id: int):
     con.commit()
     con.close()
 
-def check_growth_memory(guild_id: int):
-    d = get_dragon(guild_id)
-    stage, _ = get_stage(d["xp"])
-    # Lightweight memory only for round XP milestones.
-    if d["xp"] > 0 and d["xp"] % 1000 < 10:
-        add_memory(guild_id, f"The dragon felt stronger around {d['xp']} XP while still in stage {stage}.")
+def affection_event_text(member_name: str):
+    return random.choice(AFFECTION_EVENTS).format(name=member_name)

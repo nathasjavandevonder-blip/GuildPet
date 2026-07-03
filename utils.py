@@ -86,3 +86,16 @@ def current_season():
 def is_night_utc():
     hour = datetime.now(timezone.utc).hour
     return hour >= 22 or hour < 6
+
+
+def detailed_stage_title(xp: int):
+    # Extra visible growth before the first hatch.
+    if xp < 250:
+        return "Tiny Egg", "🥚"
+    if xp < 500:
+        return "Large Egg", "🥚"
+    if xp < 750:
+        return "Cracked Egg", "🥚"
+    if xp < 1000:
+        return "Almost Hatching", "🥚"
+    return get_stage_title(xp)

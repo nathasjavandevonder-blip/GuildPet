@@ -1,17 +1,18 @@
 import discord
 from database import get_dragon, connect
-from utils import emoji_bar, growth_bar, heart_bar, get_stage, get_stage_title, next_stage_info, time_of_day, current_season
+from utils import emoji_bar, growth_bar, heart_bar, get_stage, get_stage_title, detailed_stage_title, next_stage_info, time_of_day, current_season
 from shop import SHOP, has_item
 from achievements import ACHIEVEMENTS, get_user_achievements
 from art_engine import attach_visual, art_status, needed_images_for_stage
 from world import current_world, world_progress_bar, unlocked_world_text
 from progression import RESEARCH, has_research, level_needed
+from traits import trait_description
 
 def make_dragon_embed(guild_id: int):
     d = get_dragon(guild_id)
 
     stage, emoji = get_stage(d["xp"])
-    stage_title, _ = get_stage_title(d["xp"])
+    stage_title, _ = detailed_stage_title(d["xp"])
     progress, current_xp, next_xp, next_name = next_stage_info(d["xp"])
     world_now, world_next = current_world(d["lifetime_guild_tokens"])
 
@@ -28,8 +29,10 @@ def make_dragon_embed(guild_id: int):
             f"🏡 **Lair:** {d['lair']}\n"
             f"🌍 **World:** {world_now[1]}\n"
             f"🧠 **Personality:** {d['personality']} · 😊 **Mood:** {d['mood']}\n"
+            f"🌟 **Dragon Trait:** {d['dragon_trait']}\n"
             f"🌤️ **Sky:** {time_of_day()} · {d['weather']} · 🌸 **Season:** {current_season()}\n"
-            f"🎩 **Accessory:** {d['accessory']} · 💤 **Sleeping:** {'Yes' if d['sleeping'] else 'No'}"
+            f"🎩 **Accessory:** {d['accessory']} · 💤 **Sleeping:** {'Yes' if d['sleeping'] else 'No'}\n"
+            f"🌎 **World Event:** {d['world_event']}"
         ),
         color=0x7B2CFF
     )
@@ -306,6 +309,22 @@ def make_needed_images_embed(guild_id: int):
             "`assets/events/storm.png`"
         ),
         inline=False
+    )
+
+    return embed
+
+
+def make_trait_embed(guild_id: int):
+    trait, desc = trait_description(guild_id)
+
+    embed = discord.Embed(
+        title="🌟 Dragon Trait",
+        description=(
+            f"Trait: **{trait}**\n"
+            f"{desc}\n\n"
+            f"The dragon's trait affects some living dialogue and behavior."
+        ),
+        color=0x7B2CFF
     )
 
     return embed

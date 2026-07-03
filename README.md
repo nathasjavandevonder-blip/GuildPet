@@ -1,18 +1,24 @@
-# Guild Dragon Bot v2.2 Fixed
+# Guild Dragon Bot v2.3 — Living Events
 
-This is a clean full release rebuilt from v2.1. It fixes the broken `bot.py` syntax issue and adds v2.2 Guild Progression safely.
+## New in v2.3
 
-## Includes
+- Deeper sleeping behavior
+- Mood-based living quotes
+- Dragon traits
+- World events
+- Daily guild gift
+- Affection events after bonding
+- More detailed egg growth: Tiny Egg, Large Egg, Cracked Egg, Almost Hatching
+- `/dragon_trait`
+
+## Existing systems included
 
 - v2.1 Living Dragon
 - v2.2 Guild Progression
-- Guild Level
-- Guild XP
-- Research Points
-- Research menu
-- Research button
-- Prestige command
-- Clean fixed `bot.py`
+- Research
+- Prestige
+- World progression
+- Art engine
 
 ## Update
 
@@ -28,4 +34,4 @@ sudo systemctl restart dragonbot
 sudo systemctl status dragonbot --no-pager -l
 ```
 
-No database reset required. Missing columns are added automatically.
+No database reset required.

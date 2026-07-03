@@ -5,6 +5,7 @@ from memories import add_memory
 from shop import has_item
 from utils import clamp, get_stage, utc_today
 from progression import research_bonus, add_guild_level_xp
+from living import affection_event_text
 
 DRAGON_MESSAGES = {
     "feed": ["That was delicious!", "More meat, please!", "I feel stronger already.", "My belly is happy now.", "You always know what I like."],
@@ -198,6 +199,11 @@ def apply_action(guild_id: int, user, action: str):
 
     e = effects[action]
     d = get_dragon(guild_id)
+
+    if d["sleeping"] and action not in ["bond", "rest"]:
+        action = "bond"
+        e = effects[action]
+
     old_stage, _ = get_stage(d["xp"])
 
     hunger = clamp(d["hunger"] + e.get("hunger", 0) + bonus.get("hunger", 0))
@@ -212,6 +218,9 @@ def apply_action(guild_id: int, user, action: str):
 
     dragon_message = random.choice(DRAGON_MESSAGES[action])
     text = f"**{user.display_name}** {e['text']} and earned **{e['tokens']} Dragon Tokens**."
+
+    if action == "bond" and random.random() < 0.35:
+        text += "\n" + affection_event_text(user.display_name)
 
     new_stage, _ = get_stage(xp)
 
@@ -234,6 +243,7 @@ def apply_action(guild_id: int, user, action: str):
             lifetime_guild_tokens=?,
             pose=?,
             visual_event=?,
+            sleeping=0,
             last_action_text=?,
             dragon_message=?
         WHERE guild_id=?
