@@ -1,82 +1,24 @@
 import random
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 from database import connect, get_dragon
 from memories import add_memory
 from shop import has_item
-from utils import clamp, get_stage
+from utils import clamp, get_stage, utc_today
 
 DRAGON_MESSAGES = {
-    "feed": [
-        "That was delicious!",
-        "More meat, please!",
-        "I feel stronger already.",
-        "My belly is happy now.",
-        "You always know what I like."
-    ],
-    "play": [
-        "Again! Again!",
-        "That was fun!",
-        "I almost caught the ball with my wings.",
-        "I like when the guild plays with me.",
-        "I feel full of energy!"
-    ],
-    "train": [
-        "My fire feels hotter today.",
-        "I will protect this guild.",
-        "Training makes me powerful!",
-        "One day my roar will shake the sky.",
-        "I am learning fast."
-    ],
-    "clean": [
-        "So fresh and shiny!",
-        "My scales feel amazing.",
-        "I smell better now.",
-        "Even dragons need bath time.",
-        "Look how shiny my scales are!"
-    ],
-    "rest": [
-        "Good night, keepers...",
-        "Wake me if treasure appears.",
-        "Zzz... tiny dragon dreams...",
-        "I will dream about flying.",
-        "The lair feels cozy."
-    ],
-    "bond": [
-        "I trust you more now.",
-        "You are one of my favorite keepers.",
-        "I like when you sit with me.",
-        "The guild feels like home.",
-        "Stay a little longer."
-    ],
-    "idle": [
-        "I wonder what the guild is doing...",
-        "Someone scratched behind my horns today. That felt nice.",
-        "I am guarding the lair.",
-        "Is it snack time yet?",
-        "The cave is quiet today.",
-        "I can hear wings in my dreams.",
-        "One day I will fly above the whole guild."
-    ],
-    "hungry": [
-        "My tummy is rumbling...",
-        "Did someone forget my food?",
-        "I can smell snacks somewhere..."
-    ],
-    "sleepy": [
-        "Five more minutes...",
-        "I am getting sleepy.",
-        "The nest looks very comfortable."
-    ],
-    "messy": [
-        "My scales feel dirty...",
-        "The lair needs cleaning.",
-        "I stepped in mud again."
-    ],
-    "affectionate": [
-        "I love this guild.",
-        "You make this lair feel like home.",
-        "I remember everyone who cared for me."
-    ]
+    "feed": ["That was delicious!", "More meat, please!", "I feel stronger already.", "My belly is happy now.", "You always know what I like."],
+    "play": ["Again! Again!", "That was fun!", "I almost caught the ball with my wings.", "I like when the guild plays with me.", "I feel full of energy!"],
+    "train": ["My fire feels hotter today.", "I will protect this guild.", "Training makes me powerful!", "One day my roar will shake the sky.", "I am learning fast."],
+    "clean": ["So fresh and shiny!", "My scales feel amazing.", "I smell better now.", "Even dragons need bath time.", "Look how shiny my scales are!"],
+    "rest": ["Good night, keepers...", "Wake me if treasure appears.", "Zzz... tiny dragon dreams...", "I will dream about flying.", "The lair feels cozy."],
+    "bond": ["I trust you more now.", "You are one of my favorite keepers.", "I like when you sit with me.", "The guild feels like home.", "Stay a little longer."],
+    "idle": ["I wonder what the guild is doing...", "Someone scratched behind my horns today. That felt nice.", "I am guarding the lair.", "Is it snack time yet?", "The cave is quiet today.", "I can hear wings in my dreams.", "One day I will fly above the whole guild."],
+    "hungry": ["My tummy is rumbling...", "Did someone forget my food?", "I can smell snacks somewhere..."],
+    "sleepy": ["Five more minutes...", "I am getting sleepy.", "The nest looks very comfortable."],
+    "messy": ["My scales feel dirty...", "The lair needs cleaning.", "I stepped in mud again."],
+    "affectionate": ["I love this guild.", "You make this lair feel like home.", "I remember everyone who cared for me."],
+    "night": ["The stars look beautiful tonight.", "I will guard the lair while everyone sleeps.", "The moon makes my scales glow."],
+    "morning": ["Good morning, keepers!", "I woke up thinking about breakfast.", "A new day in the lair begins!"],
 }
 
 def mood_from_stats(d):
@@ -92,8 +34,19 @@ def mood_from_stats(d):
         return "Happy"
     return "Curious"
 
+def time_based_message():
+    hour = datetime.now(timezone.utc).hour
+    if 5 <= hour < 11:
+        return random.choice(DRAGON_MESSAGES["morning"])
+    if hour >= 22 or hour < 5:
+        return random.choice(DRAGON_MESSAGES["night"])
+    return None
+
 def pick_idle_message(d):
     mood = mood_from_stats(d)
+    timed = time_based_message()
+    if timed and random.random() < 0.35:
+        return timed
     if mood == "Hungry":
         return random.choice(DRAGON_MESSAGES["hungry"])
     if mood == "Sleepy":
@@ -109,7 +62,6 @@ def check_cooldown(guild_id: int, user_id: int, action: str, minutes: int = 30):
     cur = con.cursor()
     cur.execute("SELECT last_used FROM cooldowns WHERE guild_id=? AND user_id=? AND action=?", (guild_id, user_id, action))
     row = cur.fetchone()
-
     now = datetime.now(timezone.utc)
 
     if row:
@@ -123,6 +75,41 @@ def check_cooldown(guild_id: int, user_id: int, action: str, minutes: int = 30):
     con.commit()
     con.close()
     return True, 0
+
+def update_daily_streak(guild_id: int, user_id: int):
+    today = utc_today()
+    con = connect()
+    con.row_factory = __import__("sqlite3").Row
+    cur = con.cursor()
+    cur.execute("SELECT streak, best_streak, last_daily FROM players WHERE guild_id=? AND user_id=?", (guild_id, user_id))
+    p = cur.fetchone()
+
+    if not p:
+        con.close()
+        return 0, False
+
+    if p["last_daily"] == today:
+        con.close()
+        return p["streak"], False
+
+    if p["last_daily"]:
+        try:
+            last = date.fromisoformat(p["last_daily"])
+            now_date = date.fromisoformat(today)
+            if (now_date - last).days == 1:
+                streak = p["streak"] + 1
+            else:
+                streak = 1
+        except Exception:
+            streak = 1
+    else:
+        streak = 1
+
+    best = max(p["best_streak"], streak)
+    cur.execute("UPDATE players SET streak=?, best_streak=?, last_daily=? WHERE guild_id=? AND user_id=?", (streak, best, today, guild_id, user_id))
+    con.commit()
+    con.close()
+    return streak, True
 
 def add_player_reward(guild_id: int, user_id: int, tokens: int, points: int, action: str):
     column = {"feed": "feeds", "play": "plays", "train": "trains", "clean": "cleans", "rest": "rests", "bond": "bonds", "event": "events"}.get(action)
@@ -141,13 +128,13 @@ def add_player_reward(guild_id: int, user_id: int, tokens: int, points: int, act
 
     con.commit()
     con.close()
+    return update_daily_streak(guild_id, user_id)
 
 def update_personality(guild_id: int):
     d = get_dragon(guild_id)
 
     personality = mood_from_stats(d)
     if personality in ["Hungry", "Messy", "Sleepy"]:
-        # mood changes, but personality stays more stable
         personality = d["personality"] or "Curious"
     elif d["bond"] >= 80 and d["happiness"] >= 80:
         personality = "Affectionate"
@@ -210,7 +197,10 @@ def apply_action(guild_id: int, user, action: str):
     con.commit()
     con.close()
 
-    add_player_reward(guild_id, user.id, e["tokens"], e["points"], action)
+    streak, new_day = add_player_reward(guild_id, user.id, e["tokens"], e["points"], action)
+    if new_day and streak > 1:
+        add_memory(guild_id, f"{user.display_name} reached a {streak} day keeper streak.")
+
     update_personality(guild_id)
 
 def decay_dragon(guild_id: int):

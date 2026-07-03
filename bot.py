@@ -89,6 +89,47 @@ async def dragon_profile(interaction: discord.Interaction, member: discord.Membe
     member = member or interaction.user
     await interaction.response.send_message(embed=make_profile_embed(interaction.guild, member), ephemeral=True)
 
+@bot.tree.command(name="dragon_title", description="Set your personal dragon keeper title.")
+async def dragon_title(interaction: discord.Interaction, title: str):
+    if len(title) > 32:
+        await interaction.response.send_message("Title is too long. Max 32 characters.", ephemeral=True)
+        return
+
+    con = connect()
+    cur = con.cursor()
+    cur.execute("""
+        INSERT INTO players (guild_id, user_id, keeper_title)
+        VALUES (?, ?, ?)
+        ON CONFLICT(guild_id, user_id)
+        DO UPDATE SET keeper_title=excluded.keeper_title
+    """, (interaction.guild.id, interaction.user.id, title))
+    con.commit()
+    con.close()
+
+    await interaction.response.send_message(f"✅ Your keeper title is now **{title}**.", ephemeral=True)
+
+@bot.tree.command(name="dragon_streak", description="Show your current dragon keeper streak.")
+async def dragon_streak(interaction: discord.Interaction, member: discord.Member = None):
+    member = member or interaction.user
+    con = connect()
+    con.row_factory = __import__("sqlite3").Row
+    cur = con.cursor()
+    cur.execute("SELECT streak, best_streak, last_daily FROM players WHERE guild_id=? AND user_id=?", (interaction.guild.id, member.id))
+    p = cur.fetchone()
+    con.close()
+
+    if not p:
+        await interaction.response.send_message(f"{member.display_name} has no streak yet.", ephemeral=True)
+        return
+
+    await interaction.response.send_message(
+        f"🔥 **{member.display_name}'s Keeper Streak**\n"
+        f"Current: **{p['streak']} days**\n"
+        f"Best: **{p['best_streak']} days**\n"
+        f"Last care day: **{p['last_daily'] or 'Never'}**",
+        ephemeral=True
+    )
+
 @bot.tree.command(name="dragon_event_channel", description="Set the channel for random dragon events.")
 @app_commands.checks.has_permissions(manage_guild=True)
 async def dragon_event_channel(interaction: discord.Interaction):

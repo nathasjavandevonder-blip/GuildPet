@@ -56,7 +56,7 @@ class DragonView(discord.ui.View):
 
         con = connect()
         cur = con.cursor()
-        cur.execute("SELECT user_id, points, tokens FROM players WHERE guild_id=? ORDER BY points DESC LIMIT 10", (interaction.guild.id,))
+        cur.execute("SELECT user_id, points, tokens, keeper_title FROM players WHERE guild_id=? ORDER BY points DESC LIMIT 10", (interaction.guild.id,))
         rows = cur.fetchall()
         con.close()
 
@@ -65,7 +65,7 @@ class DragonView(discord.ui.View):
             return
 
         lines = []
-        for i, (user_id, points, tokens) in enumerate(rows, start=1):
+        for i, (user_id, points, tokens, title) in enumerate(rows, start=1):
             member = interaction.guild.get_member(user_id)
             if not member:
                 try:
@@ -73,7 +73,8 @@ class DragonView(discord.ui.View):
                 except Exception:
                     member = None
             name = member.display_name if member else f"User {user_id}"
-            lines.append(f"**{i}. {name}**\n— {points} points | {tokens} tokens")
+            title = title or "Dragon Keeper"
+            lines.append(f"**{i}. {name}** — *{title}*\n{points} points | {tokens} tokens")
 
         await interaction.response.send_message("🏆 **Top Dragon Keepers**\n\n" + "\n\n".join(lines), ephemeral=True)
 

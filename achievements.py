@@ -9,6 +9,8 @@ ACHIEVEMENTS = {
     "clean_25": ("🛁 Clean Keeper", "Clean the dragon 25 times."),
     "bond_25": ("❤️ Dragon Friend", "Bond with the dragon 25 times."),
     "events_10": ("🎁 Event Hunter", "Claim 10 random events."),
+    "streak_7": ("🔥 One Week Keeper", "Keep a 7 day streak."),
+    "streak_30": ("🌟 Loyal Keeper", "Keep a 30 day streak."),
     "points_500": ("🏅 Caretaker", "Earn 500 points."),
     "points_2500": ("🏆 Dragon Keeper", "Earn 2,500 points."),
 }
@@ -31,6 +33,8 @@ def check_achievements(guild, user_id: int):
     if p["cleans"] >= 25: to_unlock.append("clean_25")
     if p["bonds"] >= 25: to_unlock.append("bond_25")
     if p["events"] >= 10: to_unlock.append("events_10")
+    if p["streak"] >= 7: to_unlock.append("streak_7")
+    if p["streak"] >= 30: to_unlock.append("streak_30")
     if p["points"] >= 500: to_unlock.append("points_500")
     if p["points"] >= 2500: to_unlock.append("points_2500")
 

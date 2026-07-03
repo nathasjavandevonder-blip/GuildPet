@@ -1,6 +1,6 @@
 import discord
 from database import get_dragon, connect
-from utils import emoji_bar, growth_bar, heart_bar, get_stage, next_stage_info
+from utils import emoji_bar, growth_bar, heart_bar, get_stage, get_stage_title, next_stage_info
 from shop import SHOP, has_item
 from achievements import ACHIEVEMENTS, get_user_achievements
 from visuals import attach_visual
@@ -8,17 +8,17 @@ from visuals import attach_visual
 def make_dragon_embed(guild_id: int):
     d = get_dragon(guild_id)
     stage, emoji = get_stage(d["xp"])
+    stage_title, _ = get_stage_title(d["xp"])
     progress, current_xp, next_xp, next_name = next_stage_info(d["xp"])
 
     embed = discord.Embed(
         title=f"{emoji} {d['dragon_name']}",
         description=(
-            f"**{stage}** · {d['dragon_color']} Dragon\n"
+            f"**{stage_title}** · {d['dragon_color']} Dragon\n"
             f"🏡 **Lair:** {d['lair']}\n"
             f"🧠 **Personality:** {d['personality']}\n"
             f"😊 **Mood:** {d['mood']}\n\n"
-            f"⭐ **Hatchling Progress:** {d['xp']} / {next_xp}\n"
-            f"🔜 **Next stage:** {next_name}\n"
+            f"⭐ **Progress to {next_name}:** {d['xp']} / {next_xp}\n"
             f"{growth_bar(progress)}"
         ),
         color=0x7B2CFF
@@ -70,9 +70,17 @@ def make_profile_embed(guild, member):
         if key in ACHIEVEMENTS:
             achievement_lines.append(ACHIEVEMENTS[key][0])
 
+    title = p["keeper_title"] or "Dragon Keeper"
+
     embed = discord.Embed(
         title=f"🐉 {member.display_name}'s Dragon Profile",
-        description=f"**Points:** {p['points']}\n**Tokens:** {p['tokens']}",
+        description=(
+            f"**Title:** {title}\n"
+            f"**Points:** {p['points']}\n"
+            f"**Tokens:** {p['tokens']}\n"
+            f"🔥 **Current Streak:** {p['streak']} days\n"
+            f"🌟 **Best Streak:** {p['best_streak']} days"
+        ),
         color=0x7B2CFF
     )
     embed.add_field(name="Care Stats", value=(

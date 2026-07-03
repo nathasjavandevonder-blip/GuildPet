@@ -1,17 +1,16 @@
-# Guild Dragon Bot v1.3
+# Guild Dragon Bot v1.4
 
 A button-based Discord guild dragon game.
 
-## New in v1.3
-- Dragon identity system
-- `/dragon_name`
-- `/dragon_color`
-- `/dragon_profile`
-- Achievements button
-- Cleaner leaderboard profiles
-- More living dragon dialogue
-- Mood-aware dragon speech
-- Better memory entries
+## New in v1.4
+- Keeper title system
+- Daily streak system
+- `/dragon_title`
+- `/dragon_streak`
+- Better profile cards
+- Dragon stage titles
+- Time-aware dragon mood
+- Cleaner living dragon text
 - Full project release
 
 ## Run
@@ -35,12 +34,14 @@ DISCORD_TOKEN=your_token_here
 /dragon_setup
 ```
 
-## Optional admin commands
+## Optional commands
 
 ```text
 /dragon_name
 /dragon_color
-/dragon_event_channel
 /dragon_profile
+/dragon_title
+/dragon_streak
+/dragon_event_channel
 /dragon_reset
 ```

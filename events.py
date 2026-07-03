@@ -10,6 +10,8 @@ EVENTS = [
     ("merchant", "🧙 Mysterious merchant!", "A traveler offers a small gift to the first keeper."),
     ("storm", "🌧️ Storm in the lair!", "The dragon needs help before the cave gets too messy."),
     ("rare_meat", "🥩 Rare meat appeared!", "A rare piece of meat appeared near the dragon."),
+    ("butterflies", "🦋 Glowing butterflies!", "The dragon is chasing glowing butterflies around the lair."),
+    ("visitor", "🐲 Ancient visitor!", "Another dragon passed by and left a small blessing."),
 ]
 
 def create_event_record(guild_id: int, event_type: str, message_id: int):
@@ -48,7 +50,7 @@ def claim_event(guild_id: int, user):
         UPDATE dragon
         SET xp=xp+?, guild_tokens=guild_tokens+?, last_action_text=?, dragon_message=?, pose=?
         WHERE guild_id=?
-    """, (reward_xp, reward_tokens, f"🎁 **{user.display_name}** claimed a random event reward!", "Treasure makes my lair feel special.", "celebrating", guild_id))
+    """, (reward_xp, reward_tokens, f"🎁 **{user.display_name}** claimed a random event reward!", "Something exciting happened in the lair!", "celebrating", guild_id))
     con.commit()
     con.close()
 

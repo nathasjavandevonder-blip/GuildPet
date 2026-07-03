@@ -33,7 +33,11 @@ PLAYER_COLUMNS = {
     "cleans": "INTEGER DEFAULT 0",
     "rests": "INTEGER DEFAULT 0",
     "bonds": "INTEGER DEFAULT 0",
-    "events": "INTEGER DEFAULT 0"
+    "events": "INTEGER DEFAULT 0",
+    "streak": "INTEGER DEFAULT 0",
+    "best_streak": "INTEGER DEFAULT 0",
+    "last_daily": "TEXT",
+    "keeper_title": "TEXT"
 }
 
 def connect():

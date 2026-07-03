@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 def clamp(value, min_value=0, max_value=100):
     return max(min_value, min(max_value, value))
 
@@ -37,6 +39,18 @@ def get_stage(xp: int):
         return "Hatchling", "🐲"
     return "Egg", "🥚"
 
+def get_stage_title(xp: int):
+    stage, emoji = get_stage(xp)
+    titles = {
+        "Egg": "Tiny Egg",
+        "Hatchling": "Curious Hatchling",
+        "Young Dragon": "Young Guardian",
+        "Adult Dragon": "Sky Protector",
+        "Ancient Dragon": "Ancient Elder",
+        "Elder Dragon": "Celestial Dragon",
+    }
+    return titles.get(stage, stage), emoji
+
 def next_stage_info(xp: int):
     stages = [
         ("Egg", 0),
@@ -64,3 +78,6 @@ def next_stage_info(xp: int):
 
     progress = int(((xp - current_xp) / (next_xp - current_xp)) * 100)
     return clamp(progress), current_xp, next_xp, next_name
+
+def utc_today():
+    return datetime.now(timezone.utc).date().isoformat()
