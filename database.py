@@ -1,4 +1,6 @@
 import sqlite3
+import time
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from config import DB_FILE
 
@@ -57,98 +59,143 @@ PLAYER_COLUMNS = {
 }
 
 def connect():
-    return sqlite3.connect(DB_FILE)
+    con = sqlite3.connect(DB_FILE, timeout=30)
+    con.execute("PRAGMA journal_mode=WAL")
+    con.execute("PRAGMA busy_timeout=30000")
+    con.execute("PRAGMA foreign_keys=ON")
+    return con
+
+@contextmanager
+def db_session(row_factory=False):
+    con = connect()
+    if row_factory:
+        con.row_factory = sqlite3.Row
+    try:
+        yield con
+        con.commit()
+    except sqlite3.OperationalError as exc:
+        con.rollback()
+        raise exc
+    except Exception:
+        con.rollback()
+        raise
+    finally:
+        con.close()
+
+def execute_with_retry(fn, retries=5, delay=0.25):
+    last_error = None
+
+    for attempt in range(retries):
+        try:
+            return fn()
+        except sqlite3.OperationalError as exc:
+            last_error = exc
+            if "locked" not in str(exc).lower():
+                raise
+            time.sleep(delay * (attempt + 1))
+
+    raise last_error
 
 def add_missing_columns(cur, table, columns):
     cur.execute(f"PRAGMA table_info({table})")
     existing = {row[1] for row in cur.fetchall()}
+
     for name, definition in columns.items():
         if name not in existing:
             cur.execute(f"ALTER TABLE {table} ADD COLUMN {name} {definition}")
 
 def init_db():
-    con = connect()
-    cur = con.cursor()
+    def work():
+        with db_session() as con:
+            cur = con.cursor()
 
-    cur.execute("CREATE TABLE IF NOT EXISTS dragon (guild_id INTEGER PRIMARY KEY)")
-    add_missing_columns(cur, "dragon", DRAGON_COLUMNS)
+            cur.execute("CREATE TABLE IF NOT EXISTS dragon (guild_id INTEGER PRIMARY KEY)")
+            add_missing_columns(cur, "dragon", DRAGON_COLUMNS)
 
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS players (
-        guild_id INTEGER,
-        user_id INTEGER,
-        PRIMARY KEY (guild_id, user_id)
-    )
-    """)
-    add_missing_columns(cur, "players", PLAYER_COLUMNS)
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS players (
+                guild_id INTEGER,
+                user_id INTEGER,
+                PRIMARY KEY (guild_id, user_id)
+            )
+            """)
+            add_missing_columns(cur, "players", PLAYER_COLUMNS)
 
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS cooldowns (
-        guild_id INTEGER,
-        user_id INTEGER,
-        action TEXT,
-        last_used TEXT,
-        PRIMARY KEY (guild_id, user_id, action)
-    )
-    """)
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS cooldowns (
+                guild_id INTEGER,
+                user_id INTEGER,
+                action TEXT,
+                last_used TEXT,
+                PRIMARY KEY (guild_id, user_id, action)
+            )
+            """)
 
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS shop_items (
-        guild_id INTEGER,
-        item_key TEXT,
-        bought INTEGER DEFAULT 0,
-        PRIMARY KEY (guild_id, item_key)
-    )
-    """)
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS shop_items (
+                guild_id INTEGER,
+                item_key TEXT,
+                bought INTEGER DEFAULT 0,
+                PRIMARY KEY (guild_id, item_key)
+            )
+            """)
 
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS achievements (
-        guild_id INTEGER,
-        user_id INTEGER,
-        achievement_key TEXT,
-        unlocked_at TEXT,
-        PRIMARY KEY (guild_id, user_id, achievement_key)
-    )
-    """)
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS achievements (
+                guild_id INTEGER,
+                user_id INTEGER,
+                achievement_key TEXT,
+                unlocked_at TEXT,
+                PRIMARY KEY (guild_id, user_id, achievement_key)
+            )
+            """)
 
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS memories (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        guild_id INTEGER,
-        text TEXT,
-        created_at TEXT
-    )
-    """)
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS memories (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                guild_id INTEGER,
+                text TEXT,
+                created_at TEXT
+            )
+            """)
 
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS events (
-        guild_id INTEGER PRIMARY KEY,
-        event_type TEXT,
-        expires_at TEXT,
-        claimed_by INTEGER,
-        message_id INTEGER
-    )
-    """)
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS events (
+                guild_id INTEGER PRIMARY KEY,
+                event_type TEXT,
+                expires_at TEXT,
+                claimed_by INTEGER,
+                message_id INTEGER
+            )
+            """)
 
-    con.commit()
-    con.close()
+    execute_with_retry(work)
 
 def ensure_dragon(guild_id: int):
-    con = connect()
-    cur = con.cursor()
-    cur.execute(
-        "INSERT OR IGNORE INTO dragon (guild_id, last_decay, birthday) VALUES (?, ?, ?)",
-        (guild_id, datetime.now(timezone.utc).isoformat(), datetime.now(timezone.utc).date().isoformat())
-    )
-    con.commit()
-    con.close()
+    def work():
+        with db_session() as con:
+            cur = con.cursor()
+            cur.execute(
+                "INSERT OR IGNORE INTO dragon (guild_id, last_decay, birthday) VALUES (?, ?, ?)",
+                (
+                    guild_id,
+                    datetime.now(timezone.utc).isoformat(),
+                    datetime.now(timezone.utc).date().isoformat(),
+                )
+            )
+
+    execute_with_retry(work)
 
 def get_dragon(guild_id: int):
     ensure_dragon(guild_id)
-    con = connect()
-    con.row_factory = sqlite3.Row
-    cur = con.cursor()
-    cur.execute("SELECT * FROM dragon WHERE guild_id = ?", (guild_id,))
-    row = cur.fetchone()
-    con.close()
-    return row
+
+    with db_session(row_factory=True) as con:
+        cur = con.cursor()
+        cur.execute("SELECT * FROM dragon WHERE guild_id = ?", (guild_id,))
+        return cur.fetchone()
+
+def add_memory_tx(cur, guild_id: int, text: str):
+    cur.execute(
+        "INSERT INTO memories (guild_id, text, created_at) VALUES (?, ?, ?)",
+        (guild_id, text, datetime.now(timezone.utc).isoformat())
+    )

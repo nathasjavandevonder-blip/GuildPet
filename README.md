@@ -1,40 +1,29 @@
-# Guild Dragon Bot v3.0 Foundation
+# Guild Dragon Bot v3.1 Database Core
 
-This is a cleaned, more stable project structure.
+## What this fixes
 
-## What changed
+This release fixes the shop crash:
 
-- `bot.py` is now a clean launcher with startup tasks.
-- Slash commands are split into cogs:
-  - `cogs/setup.py`
-  - `cogs/admin.py`
-  - `cogs/progression.py`
-  - `cogs/profile.py`
-- Startup now prints:
-  - loaded extensions
-  - `Synced X commands`
-  - bot version
-- `.gitignore` now blocks:
-  - `.env`
-  - `guild_dragon.db`
-  - `__pycache__`
-  - `.pyc` files
+```text
+sqlite3.OperationalError: database is locked
+```
 
-## Features preserved
+The bug happened when `shop.py` bought an item and then `memories.py` opened a second SQLite writer while the first transaction was still open.
 
-- Living dragon
-- Dragon buttons
-- Shop
-- Research
-- Guild progression
-- World progression
-- Daily gifts
-- Traits
-- Profiles
-- Leaderboard
-- Memories
-- Random events
-- Art engine
+## New database layer
+
+- WAL mode
+- SQLite busy timeout
+- Retry helper for temporary locks
+- Shared transaction helper
+- `add_memory_tx()` for writing memories inside existing transactions
+- Shop purchase now writes the memory inside the same transaction
+
+## Also included
+
+- v3 Foundation project structure
+- Guild command sync in `on_ready`
+- `.gitignore` cleanup
 
 ## Update
 
@@ -47,19 +36,13 @@ cd ~/bot/dragonbot
 git pull
 python -m py_compile bot.py
 sudo systemctl restart dragonbot
-journalctl -u dragonbot -n 60 --no-pager
+journalctl -u dragonbot -n 80 --no-pager
 ```
+
+Then test buying Moss Nest again.
 
 You should see:
 
 ```text
-Loaded extension: cogs.setup
-Loaded extension: cogs.admin
-Loaded extension: cogs.progression
-Loaded extension: cogs.profile
-Synced X commands
-Logged in as Sky Dragon#1048
-Guild Dragon Bot v3.0 Foundation
+Synced X commands to guild: ...
 ```
-
-No database reset required.

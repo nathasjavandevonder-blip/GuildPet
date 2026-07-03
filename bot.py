@@ -50,6 +50,14 @@ class GuildDragonBot(commands.Bot):
         print(f"Logged in as {self.user}")
         print(f"Guild Dragon Bot v{VERSION}")
 
+        for guild in self.guilds:
+            try:
+                self.tree.copy_global_to(guild=guild)
+                synced = await self.tree.sync(guild=guild)
+                print(f"Synced {len(synced)} commands to guild: {guild.name}")
+            except Exception as exc:
+                print(f"Guild sync failed for {guild.name}: {exc}")
+
         if not dragon_decay.is_running():
             dragon_decay.start()
 
