@@ -1,39 +1,31 @@
-# Guild Dragon Bot v2.2 — Guild Progression
+# Guild Dragon Bot v2.2 Fixed
 
-A cooperative Discord guild dragon game.
+This is a clean full release rebuilt from v2.1. It fixes the broken `bot.py` syntax issue and adds v2.2 Guild Progression safely.
 
-## New in v2.2
+## Includes
 
-- Guild Level system
+- v2.1 Living Dragon
+- v2.2 Guild Progression
+- Guild Level
 - Guild XP
 - Research Points
-- Dragon Research menu
-- Permanent research bonuses
-- Prestige framework
-- Research button on the main dragon message
-- `/dragon_research`
-- `/dragon_progression`
-- `/dragon_prestige`
+- Research menu
+- Research button
+- Prestige command
+- Clean fixed `bot.py`
 
-## New progression loop
+## Update
 
-Members care for the dragon → guild earns Guild XP → guild levels up → research points unlock permanent bonuses.
+Upload all files to GitHub, commit, push.
 
-## Discord setup
+On VPS:
 
-```text
-/dragon_setup
-```
-
-## Useful commands
-
-```text
-/dragon_research
-/dragon_progression
-/dragon_prestige
-/dragon_world
-/dragon_profile
-/dragon_living_status
+```bash
+cd ~/bot/dragonbot
+git pull
+python -m py_compile bot.py
+sudo systemctl restart dragonbot
+sudo systemctl status dragonbot --no-pager -l
 ```
 
 No database reset required. Missing columns are added automatically.

@@ -9,12 +9,14 @@ from progression import RESEARCH, has_research, level_needed
 
 def make_dragon_embed(guild_id: int):
     d = get_dragon(guild_id)
+
     stage, emoji = get_stage(d["xp"])
     stage_title, _ = get_stage_title(d["xp"])
     progress, current_xp, next_xp, next_name = next_stage_info(d["xp"])
     world_now, world_next = current_world(d["lifetime_guild_tokens"])
 
     next_world = "MAX"
+
     if world_next:
         next_world = f"{world_next[1]} at {world_next[0]} lifetime tokens"
 
@@ -64,8 +66,8 @@ def make_dragon_embed(guild_id: int):
     embed.add_field(
         name="🐲 Guild Progression",
         value=(
-            f"Level **{d['guild_level']}** · Prestige **{d['prestige']}**\\n"
-            f"Research Points: **{d['research_points']}**\\n"
+            f"Level **{d['guild_level']}** · Prestige **{d['prestige']}**\n"
+            f"Research Points: **{d['research_points']}**\n"
             f"{d['guild_level_xp']} / {level_needed(d['guild_level'])} Guild XP"
         ),
         inline=False
@@ -73,7 +75,7 @@ def make_dragon_embed(guild_id: int):
 
     embed.add_field(name="🪙 Guild Tokens", value=f"Spendable: **{d['guild_tokens']}**", inline=True)
     embed.add_field(name="📝 Last action", value=d["last_action_text"], inline=False)
-    embed.set_footer(text="Use /dragon_world, /dragon_profile, /dragon_art_status or /dragon_needed_images for more info.")
+    embed.set_footer(text="Use /dragon_world, /dragon_profile, /dragon_research or /dragon_progression for more info.")
 
     embed, file = attach_visual(embed, stage, d["pose"], d["lair"], d["weather"], d["visual_event"], world_now[1])
     return embed, file
@@ -83,6 +85,7 @@ def make_world_embed(guild_id: int):
     world_now, world_next = current_world(d["lifetime_guild_tokens"])
 
     next_text = "The guild has reached the final known world milestone."
+
     if world_next:
         needed = world_next[0] - d["lifetime_guild_tokens"]
         next_text = f"Next: **{world_next[1]}** in **{needed}** lifetime tokens."
@@ -98,11 +101,18 @@ def make_world_embed(guild_id: int):
         ),
         color=0x7B2CFF
     )
-    embed.add_field(name="Unlocked World Features", value=unlocked_world_text(d["lifetime_guild_tokens"]), inline=False)
+
+    embed.add_field(
+        name="Unlocked World Features",
+        value=unlocked_world_text(d["lifetime_guild_tokens"]),
+        inline=False
+    )
+
     return embed
 
 def make_shop_embed(guild_id: int):
     d = get_dragon(guild_id)
+
     embed = discord.Embed(
         title="🛒 Guild Dragon Shop",
         description=(
@@ -112,108 +122,16 @@ def make_shop_embed(guild_id: int):
         ),
         color=0xE2B714
     )
+
     for key, item in SHOP.items():
         status = "✅ Bought" if has_item(guild_id, key) else f"Cost: {item['cost']}"
-        embed.add_field(name=f"{item['name']} — {status}", value=item["description"], inline=False)
-    return embed
-
-def make_profile_embed(guild, member):
-    con = connect()
-    con.row_factory = __import__("sqlite3").Row
-    cur = con.cursor()
-    cur.execute("SELECT * FROM players WHERE guild_id=? AND user_id=?", (guild.id, member.id))
-    p = cur.fetchone()
-    con.close()
-
-    if not p:
-        return discord.Embed(
-            title=f"🐉 {member.display_name}'s Dragon Profile",
-            description="No progress yet.",
-            color=0x7B2CFF
+        embed.add_field(
+            name=f"{item['name']} — {status}",
+            value=item["description"],
+            inline=False
         )
 
-    achievements = get_user_achievements(guild.id, member.id)
-    achievement_lines = [ACHIEVEMENTS[key][0] for key in achievements[:12] if key in ACHIEVEMENTS]
-    title = p["keeper_title"] or "Dragon Keeper"
-
-    embed = discord.Embed(
-        title=f"🐉 {member.display_name}'s Dragon Profile",
-        description=(
-            f"**Title:** {title}\n"
-            f"**Points:** {p['points']}\n"
-            f"**Tokens:** {p['tokens']}\n"
-            f"🔥 **Current Streak:** {p['streak']} days\n"
-            f"🌟 **Best Streak:** {p['best_streak']} days"
-        ),
-        color=0x7B2CFF
-    )
-    embed.add_field(
-        name="Care Stats",
-        value=(
-            f"🍖 Feeds: **{p['feeds']}**\n"
-            f"🎾 Plays: **{p['plays']}**\n"
-            f"🏋️ Trains: **{p['trains']}**\n"
-            f"🛁 Cleans: **{p['cleans']}**\n"
-            f"😴 Rests: **{p['rests']}**\n"
-            f"❤️ Bonds: **{p['bonds']}**\n"
-            f"🎁 Events: **{p['events']}**"
-        ),
-        inline=False
-    )
-    embed.add_field(name="Achievements", value="\n".join(achievement_lines) if achievement_lines else "No achievements yet.", inline=False)
     return embed
-
-def make_art_status_embed(guild_id: int):
-    d = get_dragon(guild_id)
-    stage, _ = get_stage(d["xp"])
-    world_now, _ = current_world(d["lifetime_guild_tokens"])
-    status = art_status(stage, d["pose"], d["lair"], d["weather"], d["accessory"], d["visual_event"], world_now[1])
-
-    embed = discord.Embed(
-        title="🎨 Dragon Art Engine Status",
-        description=(
-            f"**Stage:** {stage}\n"
-            f"**Pose:** {d['pose']}\n"
-            f"**Lair:** {d['lair']}\n"
-            f"**Weather:** {status['weather']}\n"
-            f"**Time:** {status['time_of_day']}\n"
-            f"**Accessory:** {d['accessory']}\n"
-            f"**Event visual:** {d['visual_event']}\n"
-            f"**World visual:** {world_now[1]}"
-        ),
-        color=0x7B2CFF
-    )
-    embed.add_field(name="Dragon image", value=f"`{status['dragon_image']}`", inline=False)
-    embed.add_field(name="Lair image", value=f"`{status['lair_image']}`", inline=False)
-    embed.add_field(name="World image", value=f"`{status['world_image']}`", inline=False)
-    embed.add_field(name="Event image", value=f"`{status['event_image']}`", inline=False)
-    embed.add_field(name="Accessory image", value=f"`{status['accessory_image']}`", inline=False)
-    return embed
-
-def make_needed_images_embed(guild_id: int):
-    d = get_dragon(guild_id)
-    stage, _ = get_stage(d["xp"])
-    needed = needed_images_for_stage(stage)
-
-    embed = discord.Embed(
-        title="🖼️ Needed Dragon Images",
-        description=f"Current stage: **{stage}**\nUpload images with these names:",
-        color=0x7B2CFF
-    )
-    embed.add_field(name="Files", value="\n".join(f"`{x}`" for x in needed), inline=False)
-    embed.add_field(
-        name="Optional v2.0 images",
-        value=(
-            "`assets/world/empty_cave.png`\n"
-            "`assets/world/soft_nest.png`\n"
-            "`assets/events/treasure.png`\n"
-            "`assets/events/merchant.png`\n"
-            "`assets/events/storm.png`"
-        ),
-        inline=False
-    )
-    return embed
-
 
 def make_research_embed(guild_id: int):
     d = get_dragon(guild_id)
@@ -239,7 +157,6 @@ def make_research_embed(guild_id: int):
         )
 
     return embed
-
 
 def make_progression_embed(guild_id: int):
     d = get_dragon(guild_id)
@@ -275,6 +192,119 @@ def make_progression_embed(guild_id: int):
     embed.add_field(
         name="Locked Research",
         value="\n".join(locked) if locked else "All research unlocked.",
+        inline=False
+    )
+
+    return embed
+
+def make_profile_embed(guild, member):
+    con = connect()
+    con.row_factory = __import__("sqlite3").Row
+    cur = con.cursor()
+    cur.execute("SELECT * FROM players WHERE guild_id=? AND user_id=?", (guild.id, member.id))
+    p = cur.fetchone()
+    con.close()
+
+    if not p:
+        return discord.Embed(
+            title=f"🐉 {member.display_name}'s Dragon Profile",
+            description="No progress yet.",
+            color=0x7B2CFF
+        )
+
+    achievements = get_user_achievements(guild.id, member.id)
+    achievement_lines = [ACHIEVEMENTS[key][0] for key in achievements[:12] if key in ACHIEVEMENTS]
+    title = p["keeper_title"] or "Dragon Keeper"
+
+    embed = discord.Embed(
+        title=f"🐉 {member.display_name}'s Dragon Profile",
+        description=(
+            f"**Title:** {title}\n"
+            f"**Points:** {p['points']}\n"
+            f"**Tokens:** {p['tokens']}\n"
+            f"🔥 **Current Streak:** {p['streak']} days\n"
+            f"🌟 **Best Streak:** {p['best_streak']} days"
+        ),
+        color=0x7B2CFF
+    )
+
+    embed.add_field(
+        name="Care Stats",
+        value=(
+            f"🍖 Feeds: **{p['feeds']}**\n"
+            f"🎾 Plays: **{p['plays']}**\n"
+            f"🏋️ Trains: **{p['trains']}**\n"
+            f"🛁 Cleans: **{p['cleans']}**\n"
+            f"😴 Rests: **{p['rests']}**\n"
+            f"❤️ Bonds: **{p['bonds']}**\n"
+            f"🎁 Events: **{p['events']}**"
+        ),
+        inline=False
+    )
+
+    embed.add_field(
+        name="Achievements",
+        value="\n".join(achievement_lines) if achievement_lines else "No achievements yet.",
+        inline=False
+    )
+
+    return embed
+
+def make_art_status_embed(guild_id: int):
+    d = get_dragon(guild_id)
+    stage, _ = get_stage(d["xp"])
+    world_now, _ = current_world(d["lifetime_guild_tokens"])
+    status = art_status(stage, d["pose"], d["lair"], d["weather"], d["accessory"], d["visual_event"], world_now[1])
+
+    embed = discord.Embed(
+        title="🎨 Dragon Art Engine Status",
+        description=(
+            f"**Stage:** {stage}\n"
+            f"**Pose:** {d['pose']}\n"
+            f"**Lair:** {d['lair']}\n"
+            f"**Weather:** {status['weather']}\n"
+            f"**Time:** {status['time_of_day']}\n"
+            f"**Accessory:** {d['accessory']}\n"
+            f"**Event visual:** {d['visual_event']}\n"
+            f"**World visual:** {world_now[1]}"
+        ),
+        color=0x7B2CFF
+    )
+
+    embed.add_field(name="Dragon image", value=f"`{status['dragon_image']}`", inline=False)
+    embed.add_field(name="Lair image", value=f"`{status['lair_image']}`", inline=False)
+    embed.add_field(name="World image", value=f"`{status['world_image']}`", inline=False)
+    embed.add_field(name="Event image", value=f"`{status['event_image']}`", inline=False)
+    embed.add_field(name="Accessory image", value=f"`{status['accessory_image']}`", inline=False)
+
+    return embed
+
+def make_needed_images_embed(guild_id: int):
+    d = get_dragon(guild_id)
+    stage, _ = get_stage(d["xp"])
+    needed = needed_images_for_stage(stage)
+
+    embed = discord.Embed(
+        title="🖼️ Needed Dragon Images",
+        description=f"Current stage: **{stage}**\nUpload images with these names:",
+        color=0x7B2CFF
+    )
+
+    embed.add_field(
+        name="Files",
+        value="\n".join(f"`{x}`" for x in needed),
+        inline=False
+    )
+
+    embed.add_field(
+        name="Optional v2.2 images",
+        value=(
+            "`assets/world/empty_cave.png`\n"
+            "`assets/world/soft_nest.png`\n"
+            "`assets/events/treasure.png`\n"
+            "`assets/events/merchant.png`\n"
+            "`assets/events/storm.png`"
+        ),
         inline=False
     )
 

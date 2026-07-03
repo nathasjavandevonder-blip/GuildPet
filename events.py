@@ -17,12 +17,13 @@ EVENTS = [
 
 def create_event_record(guild_id: int, event_type: str, message_id: int):
     expires = datetime.now(timezone.utc) + timedelta(minutes=15)
+
     con = connect()
     cur = con.cursor()
-    cur.execute(
-        "INSERT OR REPLACE INTO events (guild_id, event_type, expires_at, claimed_by, message_id) VALUES (?, ?, ?, NULL, ?)",
-        (guild_id, event_type, expires.isoformat(), message_id)
-    )
+    cur.execute("""
+        INSERT OR REPLACE INTO events (guild_id, event_type, expires_at, claimed_by, message_id)
+        VALUES (?, ?, ?, NULL, ?)
+    """, (guild_id, event_type, expires.isoformat(), message_id))
     cur.execute(
         "UPDATE dragon SET visual_event=?, dragon_message=?, last_action_text=? WHERE guild_id=?",
         (event_type, "Something is happening near the lair!", f"🌎 A world event appeared: **{event_type}**.", guild_id)
@@ -40,9 +41,11 @@ def claim_event(guild_id: int, user):
     if not event:
         con.close()
         return False, "This event is no longer active."
+
     if event["claimed_by"]:
         con.close()
         return False, "Someone already claimed this event."
+
     if datetime.now(timezone.utc) > datetime.fromisoformat(event["expires_at"]):
         con.close()
         return False, "This event expired."
@@ -76,13 +79,16 @@ def claim_event(guild_id: int, user):
 
     add_player_reward(guild_id, user.id, reward_tokens, reward_tokens, "event")
     add_guild_level_xp(guild_id, reward_tokens)
+
     return True, f"🎁 **{user.display_name}** claimed the event and won **{reward_tokens} tokens** + **{reward_xp} XP**!"
 
 def random_event_embed():
     event_type, title, text = random.choice(EVENTS)
+
     embed = discord.Embed(
         title=title,
         description=text + "\n\nFirst person to claim gets a reward.\nThis event expires in **15 minutes**.",
         color=0x7B2CFF
     )
+
     return event_type, embed

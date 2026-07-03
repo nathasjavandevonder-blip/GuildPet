@@ -5,32 +5,32 @@ RESEARCH = {
     "better_food": {
         "name": "Better Food",
         "cost": 1,
-        "description": "Feed gives +2 extra hunger and +1 XP.",
+        "description": "Feed gives +2 hunger and +1 dragon XP.",
     },
     "play_area": {
         "name": "Play Area",
         "cost": 1,
-        "description": "Play gives +2 extra happiness and +1 XP.",
+        "description": "Play gives +2 happiness and +1 dragon XP.",
     },
     "training_ground": {
         "name": "Training Ground",
         "cost": 2,
-        "description": "Train gives +2 extra bond and +2 XP.",
+        "description": "Train gives +2 bond and +2 dragon XP.",
     },
     "warm_nest": {
         "name": "Warm Nest",
         "cost": 2,
-        "description": "Rest gives +5 extra energy.",
+        "description": "Rest gives +5 energy.",
     },
     "clean_spring": {
         "name": "Clean Spring",
         "cost": 2,
-        "description": "Clean gives +5 extra cleanliness.",
+        "description": "Clean gives +5 cleanliness.",
     },
     "dragon_library": {
         "name": "Dragon Library",
         "cost": 3,
-        "description": "All care actions give +1 extra Guild XP.",
+        "description": "All care actions give +1 Guild XP.",
     },
 }
 
@@ -38,6 +38,9 @@ def level_needed(level: int):
     return 250 + ((level - 1) * 150)
 
 def add_guild_level_xp(guild_id: int, amount: int):
+    if amount <= 0:
+        return []
+
     d = get_dragon(guild_id)
     level = d["guild_level"]
     xp = d["guild_level_xp"] + amount
@@ -67,7 +70,10 @@ def add_guild_level_xp(guild_id: int, amount: int):
 def has_research(guild_id: int, key: str):
     con = connect()
     cur = con.cursor()
-    cur.execute("SELECT bought FROM shop_items WHERE guild_id=? AND item_key=?", (guild_id, f"research_{key}"))
+    cur.execute(
+        "SELECT bought FROM shop_items WHERE guild_id=? AND item_key=?",
+        (guild_id, f"research_{key}")
+    )
     row = cur.fetchone()
     con.close()
     return bool(row and row[0])
@@ -140,12 +146,9 @@ def research_bonus(guild_id: int, action: str):
 
     return bonus
 
-def prestige_available(guild_id: int):
-    d = get_dragon(guild_id)
-    return d["guild_level"] >= 25
-
 def prestige_guild(guild_id: int):
     d = get_dragon(guild_id)
+
     if d["guild_level"] < 25:
         return False, "Prestige requires Guild Level **25**."
 

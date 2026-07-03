@@ -132,7 +132,10 @@ def init_db():
 def ensure_dragon(guild_id: int):
     con = connect()
     cur = con.cursor()
-    cur.execute("INSERT OR IGNORE INTO dragon (guild_id, last_decay) VALUES (?, ?)", (guild_id, datetime.now(timezone.utc).isoformat()))
+    cur.execute(
+        "INSERT OR IGNORE INTO dragon (guild_id, last_decay, birthday) VALUES (?, ?, ?)",
+        (guild_id, datetime.now(timezone.utc).isoformat(), datetime.now(timezone.utc).date().isoformat())
+    )
     con.commit()
     con.close()
 
