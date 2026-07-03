@@ -1,6 +1,6 @@
 import discord
 from database import get_dragon, connect
-from utils import emoji_bar, growth_bar, heart_bar, get_stage, get_stage_title, next_stage_info, time_of_day
+from utils import emoji_bar, growth_bar, heart_bar, get_stage, get_stage_title, next_stage_info, time_of_day, current_season
 from shop import SHOP, has_item
 from achievements import ACHIEVEMENTS, get_user_achievements
 from art_engine import attach_visual, art_status, needed_images_for_stage
@@ -25,7 +25,8 @@ def make_dragon_embed(guild_id: int):
             f"🏡 **Lair:** {d['lair']}\n"
             f"🌍 **World:** {world_now[1]}\n"
             f"🧠 **Personality:** {d['personality']} · 😊 **Mood:** {d['mood']}\n"
-            f"🌤️ **Sky:** {time_of_day()} · {d['weather']} · 🎩 **Accessory:** {d['accessory']}"
+            f"🌤️ **Sky:** {time_of_day()} · {d['weather']} · 🌸 **Season:** {current_season()}\n"
+            f"🎩 **Accessory:** {d['accessory']} · 💤 **Sleeping:** {'Yes' if d['sleeping'] else 'No'}"
         ),
         color=0x7B2CFF
     )

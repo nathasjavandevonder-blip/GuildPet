@@ -9,6 +9,7 @@ from embeds import make_dragon_embed, make_profile_embed, make_art_status_embed,
 from memories import add_memory
 from dragon import decay_dragon
 from events import random_event_embed, create_event_record
+from living import living_update, should_request_care, mark_care_request_sent
 from views.dragon_view import DragonView
 from views.event_view import EventView
 from views.updater import update_dragon_message
@@ -105,6 +106,20 @@ async def dragon_art_status(interaction: discord.Interaction):
 async def dragon_needed_images(interaction: discord.Interaction):
     await interaction.response.send_message(embed=make_needed_images_embed(interaction.guild.id), ephemeral=True)
 
+
+@bot.tree.command(name="dragon_living_status", description="Show the dragon's current living state.")
+async def dragon_living_status(interaction: discord.Interaction):
+    d = get_dragon(interaction.guild.id)
+    await interaction.response.send_message(
+        f"🐉 **Living Dragon Status**\n"
+        f"Pose: **{d['pose']}**\n"
+        f"Sleeping: **{'Yes' if d['sleeping'] else 'No'}**\n"
+        f"Last living update: **{d['last_living_update'] or 'Never'}**\n"
+        f"Last care request: **{d['last_care_request'] or 'Never'}**\n"
+        f"Dragon says: *\"{d['dragon_message']}\"*",
+        ephemeral=True
+    )
+
 @bot.tree.command(name="dragon_profile", description="Show your dragon keeper profile.")
 async def dragon_profile(interaction: discord.Interaction, member: discord.Member = None):
     member = member or interaction.user
@@ -166,6 +181,25 @@ async def random_events():
         msg = await channel.send(embed=embed, view=EventView())
         create_event_record(guild.id, event_type, msg.id)
 
+
+@tasks.loop(minutes=15)
+async def living_dragon():
+    for guild in bot.guilds:
+        reason, message = living_update(guild.id)
+        await update_dragon_message(guild)
+
+        should_send, care_message = should_request_care(guild.id)
+        if should_send:
+            d = get_dragon(guild.id)
+            channel_id = d["channel_id"]
+            channel = guild.get_channel(channel_id) if channel_id else None
+            if channel:
+                try:
+                    await channel.send(care_message, delete_after=1800)
+                    mark_care_request_sent(guild.id)
+                except Exception:
+                    pass
+
 @bot.event
 async def on_ready():
     init_db()
@@ -173,6 +207,7 @@ async def on_ready():
     bot.add_view(EventView())
     if not dragon_decay.is_running(): dragon_decay.start()
     if not random_events.is_running(): random_events.start()
+    if not living_dragon.is_running(): living_dragon.start()
     await bot.tree.sync()
     print(f"Logged in as {bot.user}")
 

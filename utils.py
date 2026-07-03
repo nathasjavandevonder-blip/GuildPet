@@ -65,3 +65,24 @@ def time_of_day():
     if 11 <= hour < 18: return "Day"
     if 18 <= hour < 22: return "Evening"
     return "Night"
+
+
+def current_season():
+    month = datetime.now(timezone.utc).month
+    day = datetime.now(timezone.utc).day
+
+    if month == 10:
+        return "Halloween"
+    if month == 12 and day >= 15:
+        return "Christmas"
+    if month in [12, 1, 2]:
+        return "Winter"
+    if month in [3, 4, 5]:
+        return "Spring"
+    if month in [6, 7, 8]:
+        return "Summer"
+    return "Autumn"
+
+def is_night_utc():
+    hour = datetime.now(timezone.utc).hour
+    return hour >= 22 or hour < 6

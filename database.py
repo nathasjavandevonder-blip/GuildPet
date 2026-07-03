@@ -25,6 +25,10 @@ DRAGON_COLUMNS = {
     "visual_event": "TEXT DEFAULT 'None'",
     "last_action_text": "TEXT DEFAULT 'The dragon is waiting for care.'",
     "last_decay": "TEXT",
+    "last_living_update": "TEXT",
+    "last_care_request": "TEXT",
+    "sleeping": "INTEGER DEFAULT 0",
+    "birthday": "TEXT",
     "dragon_message": "TEXT DEFAULT 'I am waiting for someone to take care of me.'"
 }
 
