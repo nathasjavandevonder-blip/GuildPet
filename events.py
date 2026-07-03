@@ -46,9 +46,9 @@ def claim_event(guild_id: int, user):
     cur.execute("UPDATE events SET claimed_by=? WHERE guild_id=?", (user.id, guild_id))
     cur.execute("""
         UPDATE dragon
-        SET xp=xp+?, guild_tokens=guild_tokens+?, last_action_text=?, dragon_message=?
+        SET xp=xp+?, guild_tokens=guild_tokens+?, last_action_text=?, dragon_message=?, pose=?
         WHERE guild_id=?
-    """, (reward_xp, reward_tokens, f"🎁 **{user.display_name}** claimed a random event reward!", "Treasure makes my lair feel special.", guild_id))
+    """, (reward_xp, reward_tokens, f"🎁 **{user.display_name}** claimed a random event reward!", "Treasure makes my lair feel special.", "celebrating", guild_id))
     con.commit()
     con.close()
 

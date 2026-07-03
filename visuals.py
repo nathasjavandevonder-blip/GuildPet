@@ -18,6 +18,8 @@ POSE_FALLBACKS = {
     "clean": ["clean", "happy", "idle"],
     "sleeping": ["sleeping", "idle"],
     "bonding": ["bonding", "happy", "idle"],
+    "celebrating": ["celebrating", "happy", "idle"],
+    "sad": ["sad", "idle"],
     "looking around": ["idle"],
     "stretching": ["idle"],
     "guarding the lair": ["idle"],

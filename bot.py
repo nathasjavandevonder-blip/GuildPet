@@ -5,7 +5,7 @@ from discord import app_commands
 
 from config import TOKEN
 from database import init_db, ensure_dragon, connect, get_dragon
-from embeds import make_dragon_embed
+from embeds import make_dragon_embed, make_profile_embed
 from memories import add_memory
 from dragon import decay_dragon
 from events import random_event_embed, create_event_record
@@ -37,6 +37,57 @@ async def dragon_setup(interaction: discord.Interaction):
     con.close()
 
     add_memory(interaction.guild.id, f"The Guild Dragon was born in #{interaction.channel.name}.")
+
+@bot.tree.command(name="dragon_name", description="Rename your guild dragon.")
+@app_commands.checks.has_permissions(manage_guild=True)
+async def dragon_name(interaction: discord.Interaction, name: str):
+    if len(name) > 32:
+        await interaction.response.send_message("Name is too long. Max 32 characters.", ephemeral=True)
+        return
+
+    ensure_dragon(interaction.guild.id)
+    con = connect()
+    cur = con.cursor()
+    cur.execute("UPDATE dragon SET dragon_name=?, dragon_message=?, last_action_text=? WHERE guild_id=?", (
+        name,
+        f"My name is {name} now!",
+        f"🐉 The guild named the dragon **{name}**.",
+        interaction.guild.id
+    ))
+    con.commit()
+    con.close()
+
+    add_memory(interaction.guild.id, f"The guild named the dragon {name}.")
+    await update_dragon_message(interaction.guild)
+    await interaction.response.send_message(f"✅ Dragon name changed to **{name}**.", ephemeral=True)
+
+@bot.tree.command(name="dragon_color", description="Set your guild dragon color.")
+@app_commands.checks.has_permissions(manage_guild=True)
+async def dragon_color(interaction: discord.Interaction, color: str):
+    if len(color) > 24:
+        await interaction.response.send_message("Color name is too long. Max 24 characters.", ephemeral=True)
+        return
+
+    ensure_dragon(interaction.guild.id)
+    con = connect()
+    cur = con.cursor()
+    cur.execute("UPDATE dragon SET dragon_color=?, dragon_message=?, last_action_text=? WHERE guild_id=?", (
+        color,
+        f"I feel like a {color} dragon.",
+        f"🎨 The guild changed the dragon color to **{color}**.",
+        interaction.guild.id
+    ))
+    con.commit()
+    con.close()
+
+    add_memory(interaction.guild.id, f"The dragon became a {color} dragon.")
+    await update_dragon_message(interaction.guild)
+    await interaction.response.send_message(f"✅ Dragon color changed to **{color}**.", ephemeral=True)
+
+@bot.tree.command(name="dragon_profile", description="Show your dragon keeper profile.")
+async def dragon_profile(interaction: discord.Interaction, member: discord.Member = None):
+    member = member or interaction.user
+    await interaction.response.send_message(embed=make_profile_embed(interaction.guild, member), ephemeral=True)
 
 @bot.tree.command(name="dragon_event_channel", description="Set the channel for random dragon events.")
 @app_commands.checks.has_permissions(manage_guild=True)

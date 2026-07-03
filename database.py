@@ -6,6 +6,8 @@ DRAGON_COLUMNS = {
     "channel_id": "INTEGER",
     "message_id": "INTEGER",
     "event_channel_id": "INTEGER",
+    "dragon_name": "TEXT DEFAULT 'Guild Dragon'",
+    "dragon_color": "TEXT DEFAULT 'Purple'",
     "hunger": "INTEGER DEFAULT 60",
     "happiness": "INTEGER DEFAULT 60",
     "energy": "INTEGER DEFAULT 60",
@@ -16,6 +18,7 @@ DRAGON_COLUMNS = {
     "personality": "TEXT DEFAULT 'Curious'",
     "lair": "TEXT DEFAULT 'Empty Cave'",
     "pose": "TEXT DEFAULT 'waiting'",
+    "mood": "TEXT DEFAULT 'Curious'",
     "last_action_text": "TEXT DEFAULT 'The dragon is waiting for care.'",
     "last_decay": "TEXT",
     "dragon_message": "TEXT DEFAULT 'I am waiting for someone to take care of me.'"

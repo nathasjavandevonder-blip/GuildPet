@@ -1,7 +1,7 @@
 import discord
 from dragon import check_cooldown, apply_action
 from achievements import check_achievements, ACHIEVEMENTS
-from embeds import make_dragon_embed, make_shop_embed
+from embeds import make_dragon_embed, make_shop_embed, make_profile_embed
 from memories import get_memories
 from views.shop_view import ShopView
 
@@ -76,6 +76,10 @@ class DragonView(discord.ui.View):
             lines.append(f"**{i}. {name}**\n— {points} points | {tokens} tokens")
 
         await interaction.response.send_message("🏆 **Top Dragon Keepers**\n\n" + "\n\n".join(lines), ephemeral=True)
+
+    @discord.ui.button(label="Profile", emoji="🎖️", style=discord.ButtonStyle.secondary, custom_id="dragon_profile_button")
+    async def profile(self, interaction, button):
+        await interaction.response.send_message(embed=make_profile_embed(interaction.guild, interaction.user), ephemeral=True)
 
     @discord.ui.button(label="Memories", emoji="📖", style=discord.ButtonStyle.secondary, custom_id="dragon_memories")
     async def memories(self, interaction, button):

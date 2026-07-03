@@ -1,14 +1,17 @@
-# Guild Dragon Bot v1.2
+# Guild Dragon Bot v1.3
 
-Button-based Discord guild dragon game.
+A button-based Discord guild dragon game.
 
-## New in v1.2
-- Cleaner RPG-style embed
-- Dragon speech bubble
-- Visual asset engine
-- Dragon image support
-- Lair image support folders
-- Pose text removed from main UI
+## New in v1.3
+- Dragon identity system
+- `/dragon_name`
+- `/dragon_color`
+- `/dragon_profile`
+- Achievements button
+- Cleaner leaderboard profiles
+- More living dragon dialogue
+- Mood-aware dragon speech
+- Better memory entries
 - Full project release
 
 ## Run
@@ -32,22 +35,12 @@ DISCORD_TOKEN=your_token_here
 /dragon_setup
 ```
 
-## Image assets
-
-Put dragon images in:
+## Optional admin commands
 
 ```text
-assets/dragons/egg/idle.png
-assets/dragons/egg/eating.png
-assets/dragons/egg/sleeping.png
-assets/dragons/egg/bonding.png
-assets/dragons/hatchling/idle.png
+/dragon_name
+/dragon_color
+/dragon_event_channel
+/dragon_profile
+/dragon_reset
 ```
-
-Supported:
-- png
-- jpg
-- jpeg
-- webp
-
-The bot will fall back to `idle.png` if a pose image is missing.

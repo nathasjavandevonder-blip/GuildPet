@@ -1,7 +1,8 @@
 import discord
-from database import get_dragon
+from database import get_dragon, connect
 from utils import emoji_bar, growth_bar, heart_bar, get_stage, next_stage_info
 from shop import SHOP, has_item
+from achievements import ACHIEVEMENTS, get_user_achievements
 from visuals import attach_visual
 
 def make_dragon_embed(guild_id: int):
@@ -10,12 +11,13 @@ def make_dragon_embed(guild_id: int):
     progress, current_xp, next_xp, next_name = next_stage_info(d["xp"])
 
     embed = discord.Embed(
-        title=f"{emoji} Guild Dragon",
+        title=f"{emoji} {d['dragon_name']}",
         description=(
-            f"**{stage}**\n"
+            f"**{stage}** · {d['dragon_color']} Dragon\n"
             f"🏡 **Lair:** {d['lair']}\n"
-            f"🧠 **Personality:** {d['personality']}\n\n"
-            f"⭐ **Guild XP:** {d['xp']} / {next_xp}\n"
+            f"🧠 **Personality:** {d['personality']}\n"
+            f"😊 **Mood:** {d['mood']}\n\n"
+            f"⭐ **Hatchling Progress:** {d['xp']} / {next_xp}\n"
             f"🔜 **Next stage:** {next_name}\n"
             f"{growth_bar(progress)}"
         ),
@@ -48,4 +50,39 @@ def make_shop_embed(guild_id: int):
         status = "✅ Bought" if has_item(guild_id, key) else f"Cost: {item['cost']}"
         embed.add_field(name=f"{item['name']} — {status}", value=item["description"], inline=False)
 
+    return embed
+
+def make_profile_embed(guild, member):
+    con = connect()
+    con.row_factory = __import__("sqlite3").Row
+    cur = con.cursor()
+    cur.execute("SELECT * FROM players WHERE guild_id=? AND user_id=?", (guild.id, member.id))
+    p = cur.fetchone()
+    con.close()
+
+    if not p:
+        embed = discord.Embed(title=f"🐉 {member.display_name}'s Dragon Profile", description="No progress yet.", color=0x7B2CFF)
+        return embed
+
+    achievements = get_user_achievements(guild.id, member.id)
+    achievement_lines = []
+    for key in achievements[:12]:
+        if key in ACHIEVEMENTS:
+            achievement_lines.append(ACHIEVEMENTS[key][0])
+
+    embed = discord.Embed(
+        title=f"🐉 {member.display_name}'s Dragon Profile",
+        description=f"**Points:** {p['points']}\n**Tokens:** {p['tokens']}",
+        color=0x7B2CFF
+    )
+    embed.add_field(name="Care Stats", value=(
+        f"🍖 Feeds: **{p['feeds']}**\n"
+        f"🎾 Plays: **{p['plays']}**\n"
+        f"🏋️ Trains: **{p['trains']}**\n"
+        f"🛁 Cleans: **{p['cleans']}**\n"
+        f"😴 Rests: **{p['rests']}**\n"
+        f"❤️ Bonds: **{p['bonds']}**\n"
+        f"🎁 Events: **{p['events']}**"
+    ), inline=False)
+    embed.add_field(name="Achievements", value="\n".join(achievement_lines) if achievement_lines else "No achievements yet.", inline=False)
     return embed

@@ -6,14 +6,103 @@ from shop import has_item
 from utils import clamp, get_stage
 
 DRAGON_MESSAGES = {
-    "feed": ["That was delicious!", "More meat, please!", "I feel stronger already."],
-    "play": ["Again! Again!", "That was fun!", "I almost caught the ball with my wings."],
-    "train": ["My fire feels hotter today.", "I will protect this guild.", "Training makes me powerful!"],
-    "clean": ["So fresh and shiny!", "My scales feel amazing.", "I smell better now."],
-    "rest": ["Good night, keepers...", "Wake me if treasure appears.", "Zzz... tiny dragon dreams..."],
-    "bond": ["I trust you more now.", "You are one of my favorite keepers.", "I like when you sit with me."],
-    "idle": ["I wonder what the guild is doing...", "Someone scratched behind my horns today. That felt nice.", "I am guarding the lair.", "Is it snack time yet?"],
+    "feed": [
+        "That was delicious!",
+        "More meat, please!",
+        "I feel stronger already.",
+        "My belly is happy now.",
+        "You always know what I like."
+    ],
+    "play": [
+        "Again! Again!",
+        "That was fun!",
+        "I almost caught the ball with my wings.",
+        "I like when the guild plays with me.",
+        "I feel full of energy!"
+    ],
+    "train": [
+        "My fire feels hotter today.",
+        "I will protect this guild.",
+        "Training makes me powerful!",
+        "One day my roar will shake the sky.",
+        "I am learning fast."
+    ],
+    "clean": [
+        "So fresh and shiny!",
+        "My scales feel amazing.",
+        "I smell better now.",
+        "Even dragons need bath time.",
+        "Look how shiny my scales are!"
+    ],
+    "rest": [
+        "Good night, keepers...",
+        "Wake me if treasure appears.",
+        "Zzz... tiny dragon dreams...",
+        "I will dream about flying.",
+        "The lair feels cozy."
+    ],
+    "bond": [
+        "I trust you more now.",
+        "You are one of my favorite keepers.",
+        "I like when you sit with me.",
+        "The guild feels like home.",
+        "Stay a little longer."
+    ],
+    "idle": [
+        "I wonder what the guild is doing...",
+        "Someone scratched behind my horns today. That felt nice.",
+        "I am guarding the lair.",
+        "Is it snack time yet?",
+        "The cave is quiet today.",
+        "I can hear wings in my dreams.",
+        "One day I will fly above the whole guild."
+    ],
+    "hungry": [
+        "My tummy is rumbling...",
+        "Did someone forget my food?",
+        "I can smell snacks somewhere..."
+    ],
+    "sleepy": [
+        "Five more minutes...",
+        "I am getting sleepy.",
+        "The nest looks very comfortable."
+    ],
+    "messy": [
+        "My scales feel dirty...",
+        "The lair needs cleaning.",
+        "I stepped in mud again."
+    ],
+    "affectionate": [
+        "I love this guild.",
+        "You make this lair feel like home.",
+        "I remember everyone who cared for me."
+    ]
 }
+
+def mood_from_stats(d):
+    if d["hunger"] < 25:
+        return "Hungry"
+    if d["cleanliness"] < 25:
+        return "Messy"
+    if d["energy"] < 25:
+        return "Sleepy"
+    if d["bond"] >= 80 and d["happiness"] >= 80:
+        return "Affectionate"
+    if d["happiness"] >= 80:
+        return "Happy"
+    return "Curious"
+
+def pick_idle_message(d):
+    mood = mood_from_stats(d)
+    if mood == "Hungry":
+        return random.choice(DRAGON_MESSAGES["hungry"])
+    if mood == "Sleepy":
+        return random.choice(DRAGON_MESSAGES["sleepy"])
+    if mood == "Messy":
+        return random.choice(DRAGON_MESSAGES["messy"])
+    if mood == "Affectionate":
+        return random.choice(DRAGON_MESSAGES["affectionate"])
+    return random.choice(DRAGON_MESSAGES["idle"])
 
 def check_cooldown(guild_id: int, user_id: int, action: str, minutes: int = 30):
     con = connect()
@@ -56,22 +145,22 @@ def add_player_reward(guild_id: int, user_id: int, tokens: int, points: int, act
 def update_personality(guild_id: int):
     d = get_dragon(guild_id)
 
-    if d["bond"] >= 80 and d["happiness"] >= 80:
+    personality = mood_from_stats(d)
+    if personality in ["Hungry", "Messy", "Sleepy"]:
+        # mood changes, but personality stays more stable
+        personality = d["personality"] or "Curious"
+    elif d["bond"] >= 80 and d["happiness"] >= 80:
         personality = "Affectionate"
     elif d["energy"] >= 80 and d["bond"] >= 50:
         personality = "Playful"
-    elif d["hunger"] < 25:
-        personality = "Grumpy"
-    elif d["cleanliness"] < 25:
-        personality = "Messy"
-    elif d["energy"] < 25:
-        personality = "Sleepy"
     else:
         personality = "Curious"
 
+    mood = mood_from_stats(d)
+
     con = connect()
     cur = con.cursor()
-    cur.execute("UPDATE dragon SET personality=? WHERE guild_id=?", (personality, guild_id))
+    cur.execute("UPDATE dragon SET personality=?, mood=? WHERE guild_id=?", (personality, mood, guild_id))
     con.commit()
     con.close()
 
@@ -126,12 +215,14 @@ def apply_action(guild_id: int, user, action: str):
 
 def decay_dragon(guild_id: int):
     d = get_dragon(guild_id)
+    message = pick_idle_message(d)
+    mood = mood_from_stats(d)
 
     con = connect()
     cur = con.cursor()
     cur.execute("""
         UPDATE dragon
-        SET hunger=?, happiness=?, energy=?, cleanliness=?, pose=?, dragon_message=?, last_decay=?
+        SET hunger=?, happiness=?, energy=?, cleanliness=?, pose=?, mood=?, dragon_message=?, last_decay=?
         WHERE guild_id=?
     """, (
         clamp(d["hunger"] - 3),
@@ -139,7 +230,8 @@ def decay_dragon(guild_id: int):
         clamp(d["energy"] - 2),
         clamp(d["cleanliness"] - 2),
         random.choice(["waiting", "sleeping", "looking around", "stretching", "guarding the lair"]),
-        random.choice(DRAGON_MESSAGES["idle"]),
+        mood,
+        message,
         datetime.now(timezone.utc).isoformat(),
         guild_id,
     ))
