@@ -19,6 +19,11 @@ def growth_bar(value: int, blocks: int = 10):
     filled = round((value / 100) * blocks)
     return "🟪" * filled + "⬜" * (blocks - filled) + f" {value}%"
 
+def heart_bar(value: int, blocks: int = 10):
+    value = clamp(value)
+    filled = round((value / 100) * blocks)
+    return "💜" * filled + "🤍" * (blocks - filled) + f" {value}%"
+
 def get_stage(xp: int):
     if xp >= 100000:
         return "Elder Dragon", "🌌"

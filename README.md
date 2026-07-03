@@ -1,44 +1,53 @@
-# v1.1 Visual Engine Update
+# Guild Dragon Bot v1.2
 
-Copy these files into your GitHub repo and commit:
+Button-based Discord guild dragon game.
 
-- `config.py`
-- `visuals.py`
-- `embeds.py`
-- `bot.py`
-- `views/dragon_view.py`
-- `views/updater.py`
+## New in v1.2
+- Cleaner RPG-style embed
+- Dragon speech bubble
+- Visual asset engine
+- Dragon image support
+- Lair image support folders
+- Pose text removed from main UI
+- Full project release
 
-Also add the `assets/` folders.
+## Run
 
-## Image names
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python bot.py
+```
 
-Put images here:
+## .env
+
+```env
+DISCORD_TOKEN=your_token_here
+```
+
+## Discord setup
+
+```text
+/dragon_setup
+```
+
+## Image assets
+
+Put dragon images in:
 
 ```text
 assets/dragons/egg/idle.png
 assets/dragons/egg/eating.png
 assets/dragons/egg/sleeping.png
+assets/dragons/egg/bonding.png
 assets/dragons/hatchling/idle.png
-assets/dragons/hatchling/eating.png
-assets/dragons/hatchling/training.png
 ```
 
-Supported extensions:
+Supported:
+- png
+- jpg
+- jpeg
+- webp
 
-```text
-.png
-.jpg
-.jpeg
-.webp
-```
-
-If an exact pose is missing, the bot falls back to `idle.png`.
-
-## VPS update
-
-```bash
-cd ~/bot/dragonbot
-git pull
-sudo systemctl restart dragonbot
-```
+The bot will fall back to `idle.png` if a pose image is missing.

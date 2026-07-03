@@ -1,7 +1,6 @@
 from database import get_dragon
 from embeds import make_dragon_embed
 
-
 async def update_dragon_message(guild):
     from views.dragon_view import DragonView
 

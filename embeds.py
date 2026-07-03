@@ -1,9 +1,8 @@
 import discord
 from database import get_dragon
-from utils import emoji_bar, growth_bar, get_stage, next_stage_info
+from utils import emoji_bar, growth_bar, heart_bar, get_stage, next_stage_info
 from shop import SHOP, has_item
 from visuals import attach_visual
-
 
 def make_dragon_embed(guild_id: int):
     d = get_dragon(guild_id)
@@ -13,12 +12,12 @@ def make_dragon_embed(guild_id: int):
     embed = discord.Embed(
         title=f"{emoji} Guild Dragon",
         description=(
-            f"**Stage:** {stage}\n"
-            f"**Lair:** {d['lair']}\n"
-            f"**Personality:** {d['personality']}\n"
-            f"**Guild XP:** {d['xp']} / {next_xp}\n"
-            f"**Next stage:** {next_name}\n"
-            f"**Growth:** {growth_bar(progress)}"
+            f"**{stage}**\n"
+            f"🏡 **Lair:** {d['lair']}\n"
+            f"🧠 **Personality:** {d['personality']}\n\n"
+            f"⭐ **Guild XP:** {d['xp']} / {next_xp}\n"
+            f"🔜 **Next stage:** {next_name}\n"
+            f"{growth_bar(progress)}"
         ),
         color=0x7B2CFF
     )
@@ -27,17 +26,15 @@ def make_dragon_embed(guild_id: int):
     embed.add_field(name="😊 Happiness", value=emoji_bar(d["happiness"]), inline=False)
     embed.add_field(name="⚡ Energy", value=emoji_bar(d["energy"]), inline=False)
     embed.add_field(name="💧 Cleanliness", value=emoji_bar(d["cleanliness"]), inline=False)
-    embed.add_field(name="❤️ Bond", value=emoji_bar(d["bond"]), inline=False)
+    embed.add_field(name="💞 Guild Bond", value=heart_bar(d["bond"]), inline=False)
 
-    embed.add_field(name="🪙 Guild Tokens", value=f"{d['guild_tokens']}", inline=True)
-    embed.add_field(name="🎭 Pose", value=d["pose"], inline=True)
-    embed.add_field(name="🐉 Dragon says", value=d["dragon_message"], inline=False)
+    embed.add_field(name="🪙 Guild Tokens", value=f"**{d['guild_tokens']}**", inline=True)
+    embed.add_field(name="💭 The Dragon", value=f"*\"{d['dragon_message']}\"*", inline=False)
     embed.add_field(name="Last action", value=d["last_action_text"], inline=False)
     embed.set_footer(text="Buttons edit this one message to avoid spam.")
 
     embed, file = attach_visual(embed, stage, d["pose"])
     return embed, file
-
 
 def make_shop_embed(guild_id: int):
     d = get_dragon(guild_id)
@@ -49,9 +46,6 @@ def make_shop_embed(guild_id: int):
 
     for key, item in SHOP.items():
         status = "✅ Bought" if has_item(guild_id, key) else f"Cost: {item['cost']}"
-        embed.add_field(
-            name=f"{item['name']} — {status}",
-            value=item["description"],
-            inline=False
-        )
+        embed.add_field(name=f"{item['name']} — {status}", value=item["description"], inline=False)
+
     return embed

@@ -12,11 +12,6 @@ ACHIEVEMENTS = {
     "points_2500": ("🏆 Dragon Keeper", "Earn 2,500 points."),
 }
 
-ROLE_REWARDS = {
-    # Optional later:
-    # "points_2500": "Dragon Keeper",
-}
-
 def check_achievements(guild, user_id: int):
     con = connect()
     con.row_factory = __import__("sqlite3").Row
@@ -28,22 +23,14 @@ def check_achievements(guild, user_id: int):
         return []
 
     to_unlock = []
-    if p["feeds"] >= 1:
-        to_unlock.append("first_feed")
-    if p["feeds"] >= 25:
-        to_unlock.append("feed_25")
-    if p["plays"] >= 25:
-        to_unlock.append("play_25")
-    if p["trains"] >= 25:
-        to_unlock.append("train_25")
-    if p["cleans"] >= 25:
-        to_unlock.append("clean_25")
-    if p["bonds"] >= 25:
-        to_unlock.append("bond_25")
-    if p["points"] >= 500:
-        to_unlock.append("points_500")
-    if p["points"] >= 2500:
-        to_unlock.append("points_2500")
+    if p["feeds"] >= 1: to_unlock.append("first_feed")
+    if p["feeds"] >= 25: to_unlock.append("feed_25")
+    if p["plays"] >= 25: to_unlock.append("play_25")
+    if p["trains"] >= 25: to_unlock.append("train_25")
+    if p["cleans"] >= 25: to_unlock.append("clean_25")
+    if p["bonds"] >= 25: to_unlock.append("bond_25")
+    if p["points"] >= 500: to_unlock.append("points_500")
+    if p["points"] >= 2500: to_unlock.append("points_2500")
 
     unlocked = []
     now = datetime.now(timezone.utc).isoformat()

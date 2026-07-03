@@ -1,7 +1,7 @@
 import random
 from datetime import datetime, timedelta, timezone
 import discord
-from database import connect, get_dragon
+from database import connect
 from dragon import add_player_reward
 
 EVENTS = [
@@ -33,11 +33,9 @@ def claim_event(guild_id: int, user):
     if not event:
         con.close()
         return False, "This event is no longer active."
-
     if event["claimed_by"]:
         con.close()
         return False, "Someone already claimed this event."
-
     if datetime.now(timezone.utc) > datetime.fromisoformat(event["expires_at"]):
         con.close()
         return False, "This event expired."
@@ -48,18 +46,9 @@ def claim_event(guild_id: int, user):
     cur.execute("UPDATE events SET claimed_by=? WHERE guild_id=?", (user.id, guild_id))
     cur.execute("""
         UPDATE dragon
-        SET xp=xp+?,
-            guild_tokens=guild_tokens+?,
-            last_action_text=?,
-            dragon_message=?
+        SET xp=xp+?, guild_tokens=guild_tokens+?, last_action_text=?, dragon_message=?
         WHERE guild_id=?
-    """, (
-        reward_xp,
-        reward_tokens,
-        f"🎁 **{user.display_name}** claimed a random event reward!",
-        "Treasure makes my lair feel special.",
-        guild_id,
-    ))
+    """, (reward_xp, reward_tokens, f"🎁 **{user.display_name}** claimed a random event reward!", "Treasure makes my lair feel special.", guild_id))
     con.commit()
     con.close()
 

@@ -5,7 +5,6 @@ from embeds import make_dragon_embed, make_shop_embed
 from memories import get_memories
 from views.shop_view import ShopView
 
-
 class DragonView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -13,10 +12,7 @@ class DragonView(discord.ui.View):
     async def handle(self, interaction: discord.Interaction, action: str):
         ok, mins = check_cooldown(interaction.guild.id, interaction.user.id, action, 30)
         if not ok:
-            await interaction.response.send_message(
-                f"⏳ You can use **{action}** again in **{mins} minutes**.",
-                ephemeral=True
-            )
+            await interaction.response.send_message(f"⏳ You can use **{action}** again in **{mins} minutes**.", ephemeral=True)
             return
 
         apply_action(interaction.guild.id, interaction.user, action)
@@ -30,34 +26,25 @@ class DragonView(discord.ui.View):
 
         if unlocked:
             lines = [f"{ACHIEVEMENTS[key][0]} — {ACHIEVEMENTS[key][1]}" for key in unlocked]
-            await interaction.followup.send(
-                "🏅 **Achievement unlocked!**\n" + "\n".join(lines),
-                ephemeral=True
-            )
+            await interaction.followup.send("🏅 **Achievement unlocked!**\n" + "\n".join(lines), ephemeral=True)
 
     @discord.ui.button(label="Feed", emoji="🍖", style=discord.ButtonStyle.danger, custom_id="dragon_feed")
-    async def feed(self, interaction, button):
-        await self.handle(interaction, "feed")
+    async def feed(self, interaction, button): await self.handle(interaction, "feed")
 
     @discord.ui.button(label="Play", emoji="🎾", style=discord.ButtonStyle.success, custom_id="dragon_play")
-    async def play(self, interaction, button):
-        await self.handle(interaction, "play")
+    async def play(self, interaction, button): await self.handle(interaction, "play")
 
     @discord.ui.button(label="Train", emoji="🏋️", style=discord.ButtonStyle.primary, custom_id="dragon_train")
-    async def train(self, interaction, button):
-        await self.handle(interaction, "train")
+    async def train(self, interaction, button): await self.handle(interaction, "train")
 
     @discord.ui.button(label="Clean", emoji="🛁", style=discord.ButtonStyle.secondary, custom_id="dragon_clean")
-    async def clean(self, interaction, button):
-        await self.handle(interaction, "clean")
+    async def clean(self, interaction, button): await self.handle(interaction, "clean")
 
     @discord.ui.button(label="Rest", emoji="😴", style=discord.ButtonStyle.secondary, custom_id="dragon_rest")
-    async def rest(self, interaction, button):
-        await self.handle(interaction, "rest")
+    async def rest(self, interaction, button): await self.handle(interaction, "rest")
 
     @discord.ui.button(label="Bond", emoji="❤️", style=discord.ButtonStyle.success, custom_id="dragon_bond")
-    async def bond(self, interaction, button):
-        await self.handle(interaction, "bond")
+    async def bond(self, interaction, button): await self.handle(interaction, "bond")
 
     @discord.ui.button(label="Shop", emoji="🛒", style=discord.ButtonStyle.primary, custom_id="dragon_shop")
     async def shop(self, interaction, button):
@@ -69,12 +56,7 @@ class DragonView(discord.ui.View):
 
         con = connect()
         cur = con.cursor()
-        cur.execute("""
-            SELECT user_id, points, tokens FROM players
-            WHERE guild_id = ?
-            ORDER BY points DESC
-            LIMIT 10
-        """, (interaction.guild.id,))
+        cur.execute("SELECT user_id, points, tokens FROM players WHERE guild_id=? ORDER BY points DESC LIMIT 10", (interaction.guild.id,))
         rows = cur.fetchall()
         con.close()
 
@@ -90,14 +72,10 @@ class DragonView(discord.ui.View):
                     member = await interaction.guild.fetch_member(user_id)
                 except Exception:
                     member = None
-
             name = member.display_name if member else f"User {user_id}"
             lines.append(f"**{i}. {name}**\n— {points} points | {tokens} tokens")
 
-        await interaction.response.send_message(
-            "🏆 **Top Dragon Keepers**\n\n" + "\n\n".join(lines),
-            ephemeral=True
-        )
+        await interaction.response.send_message("🏆 **Top Dragon Keepers**\n\n" + "\n\n".join(lines), ephemeral=True)
 
     @discord.ui.button(label="Memories", emoji="📖", style=discord.ButtonStyle.secondary, custom_id="dragon_memories")
     async def memories(self, interaction, button):
@@ -107,7 +85,4 @@ class DragonView(discord.ui.View):
             return
 
         lines = [f"• {text}" for text, _ in rows]
-        await interaction.response.send_message(
-            "📖 **Dragon Memories**\n\n" + "\n".join(lines),
-            ephemeral=True
-        )
+        await interaction.response.send_message("📖 **Dragon Memories**\n\n" + "\n".join(lines), ephemeral=True)

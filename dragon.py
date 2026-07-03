@@ -6,51 +6,19 @@ from shop import has_item
 from utils import clamp, get_stage
 
 DRAGON_MESSAGES = {
-    "feed": [
-        "That was delicious!",
-        "More meat, please!",
-        "I feel stronger already.",
-    ],
-    "play": [
-        "Again! Again!",
-        "That was fun!",
-        "I almost caught the ball with my wings.",
-    ],
-    "train": [
-        "My fire feels hotter today.",
-        "I will protect this guild.",
-        "Training makes me powerful!",
-    ],
-    "clean": [
-        "So fresh and shiny!",
-        "My scales feel amazing.",
-        "I smell better now.",
-    ],
-    "rest": [
-        "Good night, keepers...",
-        "Wake me if treasure appears.",
-        "Zzz... tiny dragon dreams...",
-    ],
-    "bond": [
-        "I trust you more now.",
-        "You are one of my favorite keepers.",
-        "I like when you sit with me.",
-    ],
-    "idle": [
-        "I wonder what the guild is doing...",
-        "Someone scratched behind my horns today. That felt nice.",
-        "I am guarding the lair.",
-        "Is it snack time yet?",
-    ],
+    "feed": ["That was delicious!", "More meat, please!", "I feel stronger already."],
+    "play": ["Again! Again!", "That was fun!", "I almost caught the ball with my wings."],
+    "train": ["My fire feels hotter today.", "I will protect this guild.", "Training makes me powerful!"],
+    "clean": ["So fresh and shiny!", "My scales feel amazing.", "I smell better now."],
+    "rest": ["Good night, keepers...", "Wake me if treasure appears.", "Zzz... tiny dragon dreams..."],
+    "bond": ["I trust you more now.", "You are one of my favorite keepers.", "I like when you sit with me."],
+    "idle": ["I wonder what the guild is doing...", "Someone scratched behind my horns today. That felt nice.", "I am guarding the lair.", "Is it snack time yet?"],
 }
 
 def check_cooldown(guild_id: int, user_id: int, action: str, minutes: int = 30):
     con = connect()
     cur = con.cursor()
-    cur.execute("""
-        SELECT last_used FROM cooldowns
-        WHERE guild_id = ? AND user_id = ? AND action = ?
-    """, (guild_id, user_id, action))
+    cur.execute("SELECT last_used FROM cooldowns WHERE guild_id=? AND user_id=? AND action=?", (guild_id, user_id, action))
     row = cur.fetchone()
 
     now = datetime.now(timezone.utc)
@@ -62,25 +30,13 @@ def check_cooldown(guild_id: int, user_id: int, action: str, minutes: int = 30):
             con.close()
             return False, int(remaining.total_seconds() // 60) + 1
 
-    cur.execute("""
-        INSERT OR REPLACE INTO cooldowns (guild_id, user_id, action, last_used)
-        VALUES (?, ?, ?, ?)
-    """, (guild_id, user_id, action, now.isoformat()))
-
+    cur.execute("INSERT OR REPLACE INTO cooldowns (guild_id, user_id, action, last_used) VALUES (?, ?, ?, ?)", (guild_id, user_id, action, now.isoformat()))
     con.commit()
     con.close()
     return True, 0
 
 def add_player_reward(guild_id: int, user_id: int, tokens: int, points: int, action: str):
-    column = {
-        "feed": "feeds",
-        "play": "plays",
-        "train": "trains",
-        "clean": "cleans",
-        "rest": "rests",
-        "bond": "bonds",
-        "event": "events",
-    }.get(action)
+    column = {"feed": "feeds", "play": "plays", "train": "trains", "clean": "cleans", "rest": "rests", "bond": "bonds", "event": "events"}.get(action)
 
     con = connect()
     cur = con.cursor()
@@ -88,9 +44,7 @@ def add_player_reward(guild_id: int, user_id: int, tokens: int, points: int, act
         INSERT INTO players (guild_id, user_id, tokens, points)
         VALUES (?, ?, ?, ?)
         ON CONFLICT(guild_id, user_id)
-        DO UPDATE SET
-            tokens = tokens + excluded.tokens,
-            points = points + excluded.points
+        DO UPDATE SET tokens = tokens + excluded.tokens, points = points + excluded.points
     """, (guild_id, user_id, tokens, points))
 
     if column:
@@ -177,13 +131,7 @@ def decay_dragon(guild_id: int):
     cur = con.cursor()
     cur.execute("""
         UPDATE dragon
-        SET hunger=?,
-            happiness=?,
-            energy=?,
-            cleanliness=?,
-            pose=?,
-            dragon_message=?,
-            last_decay=?
+        SET hunger=?, happiness=?, energy=?, cleanliness=?, pose=?, dragon_message=?, last_decay=?
         WHERE guild_id=?
     """, (
         clamp(d["hunger"] - 3),

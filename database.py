@@ -47,11 +47,7 @@ def init_db():
     con = connect()
     cur = con.cursor()
 
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS dragon (
-        guild_id INTEGER PRIMARY KEY
-    )
-    """)
+    cur.execute("CREATE TABLE IF NOT EXISTS dragon (guild_id INTEGER PRIMARY KEY)")
     add_missing_columns(cur, "dragon", DRAGON_COLUMNS)
 
     cur.execute("""
