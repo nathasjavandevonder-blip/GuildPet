@@ -15,6 +15,7 @@ DRAGON_COLUMNS = {
     "bond": "INTEGER DEFAULT 0",
     "xp": "INTEGER DEFAULT 0",
     "guild_tokens": "INTEGER DEFAULT 0",
+    "lifetime_guild_tokens": "INTEGER DEFAULT 0",
     "personality": "TEXT DEFAULT 'Curious'",
     "lair": "TEXT DEFAULT 'Empty Cave'",
     "pose": "TEXT DEFAULT 'waiting'",
@@ -122,7 +123,10 @@ def init_db():
 def ensure_dragon(guild_id: int):
     con = connect()
     cur = con.cursor()
-    cur.execute("INSERT OR IGNORE INTO dragon (guild_id, last_decay) VALUES (?, ?)", (guild_id, datetime.now(timezone.utc).isoformat()))
+    cur.execute(
+        "INSERT OR IGNORE INTO dragon (guild_id, last_decay) VALUES (?, ?)",
+        (guild_id, datetime.now(timezone.utc).isoformat())
+    )
     con.commit()
     con.close()
 

@@ -119,14 +119,27 @@ def apply_action(guild_id: int, user, action: str):
         "bond": {"bond": 8, "happiness": 3, "xp": 2, "tokens": 8, "guild_tokens": 4, "points": 8, "pose": "bonding", "text": "bonded with the dragon ❤️"},
     }
     e = effects[action]; d = get_dragon(guild_id); old_stage, _ = get_stage(d["xp"])
-    hunger = clamp(d["hunger"] + e.get("hunger", 0)); happiness = clamp(d["happiness"] + e.get("happiness", 0)); energy = clamp(d["energy"] + e.get("energy", 0)); cleanliness = clamp(d["cleanliness"] + e.get("cleanliness", 0)); bond = clamp(d["bond"] + e.get("bond", 0)); xp = d["xp"] + e.get("xp", 0); guild_tokens = d["guild_tokens"] + e.get("guild_tokens", 0)
-    dragon_message = random.choice(DRAGON_MESSAGES[action]); text = f"**{user.display_name}** {e['text']} and earned **{e['tokens']} Dragon Tokens**."
+    hunger = clamp(d["hunger"] + e.get("hunger", 0))
+    happiness = clamp(d["happiness"] + e.get("happiness", 0))
+    energy = clamp(d["energy"] + e.get("energy", 0))
+    cleanliness = clamp(d["cleanliness"] + e.get("cleanliness", 0))
+    bond = clamp(d["bond"] + e.get("bond", 0))
+    xp = d["xp"] + e.get("xp", 0)
+    guild_tokens = d["guild_tokens"] + e.get("guild_tokens", 0)
+    lifetime_guild_tokens = d["lifetime_guild_tokens"] + e.get("guild_tokens", 0)
+    dragon_message = random.choice(DRAGON_MESSAGES[action])
+    text = f"**{user.display_name}** {e['text']} and earned **{e['tokens']} Dragon Tokens**."
+
     new_stage, _ = get_stage(xp)
     if new_stage != old_stage:
-        text += f"\n🎉 The dragon grew into **{new_stage}**!"; dragon_message = f"I grew into a {new_stage}!"; add_memory(guild_id, f"The dragon grew into {new_stage}. {user.display_name} triggered the milestone.")
+        text += f"\n🎉 The dragon grew into **{new_stage}**!"
+        dragon_message = f"I grew into a {new_stage}!"
+        add_memory(guild_id, f"The dragon grew into {new_stage}. {user.display_name} triggered the milestone.")
+
     con = connect(); cur = con.cursor()
-    cur.execute("UPDATE dragon SET hunger=?, happiness=?, energy=?, cleanliness=?, bond=?, xp=?, guild_tokens=?, pose=?, last_action_text=?, dragon_message=? WHERE guild_id=?", (hunger, happiness, energy, cleanliness, bond, xp, guild_tokens, e["pose"], text, dragon_message, guild_id))
+    cur.execute("UPDATE dragon SET hunger=?, happiness=?, energy=?, cleanliness=?, bond=?, xp=?, guild_tokens=?, lifetime_guild_tokens=?, pose=?, last_action_text=?, dragon_message=? WHERE guild_id=?", (hunger, happiness, energy, cleanliness, bond, xp, guild_tokens, lifetime_guild_tokens, e["pose"], text, dragon_message, guild_id))
     con.commit(); con.close()
+
     streak, new_day = add_player_reward(guild_id, user.id, e["tokens"], e["points"], action)
     if new_day and streak > 1:
         add_memory(guild_id, f"{user.display_name} reached a {streak} day keeper streak.")

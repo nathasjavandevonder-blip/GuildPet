@@ -32,7 +32,7 @@ def claim_event(guild_id: int, user):
         con.close(); return False, "This event expired."
     reward_tokens = random.randint(20, 50); reward_xp = random.randint(10, 30)
     cur.execute("UPDATE events SET claimed_by=? WHERE guild_id=?", (user.id, guild_id))
-    cur.execute("UPDATE dragon SET xp=xp+?, guild_tokens=guild_tokens+?, last_action_text=?, dragon_message=?, pose=? WHERE guild_id=?", (reward_xp, reward_tokens, f"🎁 **{user.display_name}** claimed a random event reward!", "Something exciting happened in the lair!", "celebrating", guild_id))
+    cur.execute("UPDATE dragon SET xp=xp+?, guild_tokens=guild_tokens+?, lifetime_guild_tokens=lifetime_guild_tokens+?, last_action_text=?, dragon_message=?, pose=? WHERE guild_id=?", (reward_xp, reward_tokens, reward_tokens, f"🎁 **{user.display_name}** claimed a random event reward!", "Something exciting happened in the lair!", "celebrating", guild_id))
     con.commit(); con.close()
     add_player_reward(guild_id, user.id, reward_tokens, reward_tokens, "event")
     return True, f"🎁 **{user.display_name}** claimed the event and won **{reward_tokens} tokens** + **{reward_xp} XP**!"

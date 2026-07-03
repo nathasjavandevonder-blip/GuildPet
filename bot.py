@@ -5,7 +5,7 @@ from discord import app_commands
 
 from config import TOKEN
 from database import init_db, ensure_dragon, connect, get_dragon
-from embeds import make_dragon_embed, make_profile_embed, make_art_status_embed, make_needed_images_embed
+from embeds import make_dragon_embed, make_profile_embed, make_art_status_embed, make_needed_images_embed, make_world_embed
 from memories import add_memory
 from dragon import decay_dragon
 from events import random_event_embed, create_event_record
@@ -37,6 +37,10 @@ async def dragon_setup(interaction: discord.Interaction):
     cur.execute("UPDATE dragon SET channel_id=?, message_id=?, event_channel_id=? WHERE guild_id=?", (interaction.channel.id, msg.id, interaction.channel.id, interaction.guild.id))
     con.commit(); con.close()
     add_memory(interaction.guild.id, f"The Guild Dragon was born in #{interaction.channel.name}.")
+
+@bot.tree.command(name="dragon_world", description="Show the guild's dragon world progression.")
+async def dragon_world(interaction: discord.Interaction):
+    await interaction.response.send_message(embed=make_world_embed(interaction.guild.id), ephemeral=True)
 
 @bot.tree.command(name="dragon_name", description="Rename your guild dragon.")
 @app_commands.checks.has_permissions(manage_guild=True)
@@ -76,18 +80,16 @@ async def dragon_force_pose(interaction: discord.Interaction, pose: str):
 async def dragon_force_stats(interaction: discord.Interaction, hunger: int, happiness: int, energy: int, cleanliness: int, bond: int):
     from utils import clamp
     con = connect(); cur = con.cursor()
-    cur.execute("UPDATE dragon SET hunger=?, happiness=?, energy=?, cleanliness=?, bond=?, dragon_message=?, last_action_text=? WHERE guild_id=?", (
-        clamp(hunger), clamp(happiness), clamp(energy), clamp(cleanliness), clamp(bond), "My stats changed suddenly!", "🧪 Dragon stats were adjusted for testing.", interaction.guild.id
-    ))
+    cur.execute("UPDATE dragon SET hunger=?, happiness=?, energy=?, cleanliness=?, bond=?, dragon_message=?, last_action_text=? WHERE guild_id=?", (clamp(hunger), clamp(happiness), clamp(energy), clamp(cleanliness), clamp(bond), "My stats changed suddenly!", "🧪 Dragon stats were adjusted for testing.", interaction.guild.id))
     con.commit(); con.close()
     await update_dragon_message(interaction.guild)
     await interaction.response.send_message("✅ Test stats updated.", ephemeral=True)
 
-@bot.tree.command(name="dragon_add_tokens", description="Add guild tokens for testing shop.")
+@bot.tree.command(name="dragon_add_tokens", description="Add guild tokens for testing shop/world.")
 @app_commands.checks.has_permissions(administrator=True)
 async def dragon_add_tokens(interaction: discord.Interaction, amount: int):
     con = connect(); cur = con.cursor()
-    cur.execute("UPDATE dragon SET guild_tokens=guild_tokens+?, dragon_message=?, last_action_text=? WHERE guild_id=?", (amount, "The guild treasure pile grew!", f"🪙 Added {amount} Guild Tokens for testing.", interaction.guild.id))
+    cur.execute("UPDATE dragon SET guild_tokens=guild_tokens+?, lifetime_guild_tokens=lifetime_guild_tokens+?, dragon_message=?, last_action_text=? WHERE guild_id=?", (amount, amount, "The guild treasure pile grew!", f"🪙 Added {amount} Guild Tokens for testing.", interaction.guild.id))
     con.commit(); con.close()
     await update_dragon_message(interaction.guild)
     await interaction.response.send_message(f"✅ Added **{amount}** Guild Tokens.", ephemeral=True)

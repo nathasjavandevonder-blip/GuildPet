@@ -4,41 +4,84 @@ from utils import emoji_bar, growth_bar, heart_bar, get_stage, get_stage_title, 
 from shop import SHOP, has_item
 from achievements import ACHIEVEMENTS, get_user_achievements
 from art_engine import attach_visual, art_status, needed_images_for_stage
+from world import current_world, world_progress_bar, unlocked_world_text
 
 def make_dragon_embed(guild_id: int):
     d = get_dragon(guild_id)
     stage, emoji = get_stage(d["xp"])
     stage_title, _ = get_stage_title(d["xp"])
     progress, current_xp, next_xp, next_name = next_stage_info(d["xp"])
+    world_now, world_next = current_world(d["lifetime_guild_tokens"])
+
     embed = discord.Embed(
         title=f"{emoji} {d['dragon_name']}",
         description=(
             f"**{stage_title}** · {d['dragon_color']} Dragon\n"
             f"🏡 **Lair:** {d['lair']}\n"
+            f"🌍 **World:** {world_now[1]}\n"
             f"🧠 **Personality:** {d['personality']}\n"
             f"😊 **Mood:** {d['mood']}\n"
-            f"🌤️ **World:** {time_of_day()} · {d['weather']}\n"
+            f"🌤️ **Sky:** {time_of_day()} · {d['weather']}\n"
             f"🎩 **Accessory:** {d['accessory']}\n\n"
             f"⭐ **Progress to {next_name}:** {d['xp']} / {next_xp}\n"
             f"{growth_bar(progress)}"
         ),
         color=0x7B2CFF
     )
+
     embed.add_field(name="🍖 Hunger", value=emoji_bar(d["hunger"]), inline=False)
     embed.add_field(name="😊 Happiness", value=emoji_bar(d["happiness"]), inline=False)
     embed.add_field(name="⚡ Energy", value=emoji_bar(d["energy"]), inline=False)
     embed.add_field(name="💧 Cleanliness", value=emoji_bar(d["cleanliness"]), inline=False)
     embed.add_field(name="💞 Guild Bond", value=heart_bar(d["bond"]), inline=False)
-    embed.add_field(name="🪙 Guild Tokens", value=f"**{d['guild_tokens']}**", inline=True)
+
+    next_text = "MAX"
+    if world_next:
+        next_text = f"{world_next[1]} at {world_next[0]} lifetime tokens"
+
+    embed.add_field(
+        name="🌍 Community World",
+        value=(
+            f"**Lifetime:** {d['lifetime_guild_tokens']} tokens\n"
+            f"{world_progress_bar(d['lifetime_guild_tokens'])}\n"
+            f"**Next:** {next_text}"
+        ),
+        inline=False
+    )
+
+    embed.add_field(name="🪙 Spendable Guild Tokens", value=f"**{d['guild_tokens']}**", inline=True)
     embed.add_field(name="💭 The Dragon", value=f"*\"{d['dragon_message']}\"*", inline=False)
     embed.add_field(name="Last action", value=d["last_action_text"], inline=False)
     embed.set_footer(text="Buttons edit this one message to avoid spam.")
+
     embed, file = attach_visual(embed, stage, d["pose"], d["lair"], d["weather"])
     return embed, file
 
+def make_world_embed(guild_id: int):
+    d = get_dragon(guild_id)
+    world_now, world_next = current_world(d["lifetime_guild_tokens"])
+    next_text = "The guild has reached the final known world milestone."
+    if world_next:
+        needed = world_next[0] - d["lifetime_guild_tokens"]
+        next_text = f"Next: **{world_next[1]}** in **{needed}** lifetime tokens."
+
+    embed = discord.Embed(
+        title="🌍 Dragon World Progression",
+        description=(
+            f"Current World: **{world_now[1]}**\n"
+            f"{world_now[2]}\n\n"
+            f"Lifetime Guild Tokens: **{d['lifetime_guild_tokens']}**\n"
+            f"{world_progress_bar(d['lifetime_guild_tokens'])}\n\n"
+            f"{next_text}"
+        ),
+        color=0x7B2CFF
+    )
+    embed.add_field(name="Unlocked World Features", value=unlocked_world_text(d["lifetime_guild_tokens"]), inline=False)
+    return embed
+
 def make_shop_embed(guild_id: int):
     d = get_dragon(guild_id)
-    embed = discord.Embed(title="🛒 Guild Dragon Shop", description=f"Guild Tokens: **{d['guild_tokens']}**\nBuy upgrades with the dropdown below.", color=0xE2B714)
+    embed = discord.Embed(title="🛒 Guild Dragon Shop", description=f"Spendable Guild Tokens: **{d['guild_tokens']}**\nBuy upgrades with the dropdown below.", color=0xE2B714)
     for key, item in SHOP.items():
         status = "✅ Bought" if has_item(guild_id, key) else f"Cost: {item['cost']}"
         embed.add_field(name=f"{item['name']} — {status}", value=item["description"], inline=False)
