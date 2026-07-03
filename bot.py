@@ -18,6 +18,7 @@ intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+
 @bot.tree.command(name="dragon_setup", description="Create the live Guild Dragon message in this channel.")
 @app_commands.checks.has_permissions(manage_guild=True)
 async def dragon_setup(interaction: discord.Interaction):
@@ -42,6 +43,7 @@ async def dragon_setup(interaction: discord.Interaction):
 
     add_memory(interaction.guild.id, f"The Guild Dragon was born in #{interaction.channel.name}.")
 
+
 @bot.tree.command(name="dragon_event_channel", description="Set the channel for random dragon events.")
 @app_commands.checks.has_permissions(manage_guild=True)
 async def dragon_event_channel(interaction: discord.Interaction):
@@ -55,6 +57,7 @@ async def dragon_event_channel(interaction: discord.Interaction):
 
     await interaction.response.send_message("✅ Random dragon events will appear in this channel.", ephemeral=True)
 
+
 @bot.tree.command(name="dragon_reset", description="Reset the Guild Dragon data. Careful!")
 @app_commands.checks.has_permissions(administrator=True)
 async def dragon_reset(interaction: discord.Interaction):
@@ -66,11 +69,13 @@ async def dragon_reset(interaction: discord.Interaction):
     con.close()
     await interaction.response.send_message("✅ Guild Dragon data has been reset.", ephemeral=True)
 
+
 @tasks.loop(minutes=30)
 async def dragon_decay():
     for guild in bot.guilds:
         decay_dragon(guild.id)
         await update_dragon_message(guild)
+
 
 @tasks.loop(minutes=20)
 async def random_events():
@@ -91,6 +96,7 @@ async def random_events():
         msg = await channel.send(embed=embed, view=EventView())
         create_event_record(guild.id, event_type, msg.id)
 
+
 @bot.event
 async def on_ready():
     init_db()
@@ -104,6 +110,7 @@ async def on_ready():
 
     await bot.tree.sync()
     print(f"Logged in as {bot.user}")
+
 
 if not TOKEN:
     raise RuntimeError("Missing DISCORD_TOKEN or TOKEN in .env file")

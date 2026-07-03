@@ -4,6 +4,7 @@ from utils import emoji_bar, growth_bar, get_stage, next_stage_info
 from shop import SHOP, has_item
 from visuals import attach_visual
 
+
 def make_dragon_embed(guild_id: int):
     d = get_dragon(guild_id)
     stage, emoji = get_stage(d["xp"])
@@ -12,11 +13,11 @@ def make_dragon_embed(guild_id: int):
     embed = discord.Embed(
         title=f"{emoji} Guild Dragon",
         description=(
-            f"**Stage:** {stage}\\n"
-            f"**Lair:** {d['lair']}\\n"
-            f"**Personality:** {d['personality']}\\n"
-            f"**Guild XP:** {d['xp']} / {next_xp}\\n"
-            f"**Next stage:** {next_name}\\n"
+            f"**Stage:** {stage}\n"
+            f"**Lair:** {d['lair']}\n"
+            f"**Personality:** {d['personality']}\n"
+            f"**Guild XP:** {d['xp']} / {next_xp}\n"
+            f"**Next stage:** {next_name}\n"
             f"**Growth:** {growth_bar(progress)}"
         ),
         color=0x7B2CFF
@@ -37,11 +38,12 @@ def make_dragon_embed(guild_id: int):
     embed, file = attach_visual(embed, stage, d["pose"])
     return embed, file
 
+
 def make_shop_embed(guild_id: int):
     d = get_dragon(guild_id)
     embed = discord.Embed(
         title="🛒 Guild Dragon Shop",
-        description=f"Guild Tokens: **{d['guild_tokens']}**\\nBuy upgrades with the dropdown below.",
+        description=f"Guild Tokens: **{d['guild_tokens']}**\nBuy upgrades with the dropdown below.",
         color=0xE2B714
     )
 

@@ -5,6 +5,7 @@ from embeds import make_dragon_embed, make_shop_embed
 from memories import get_memories
 from views.shop_view import ShopView
 
+
 class DragonView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -30,7 +31,7 @@ class DragonView(discord.ui.View):
         if unlocked:
             lines = [f"{ACHIEVEMENTS[key][0]} — {ACHIEVEMENTS[key][1]}" for key in unlocked]
             await interaction.followup.send(
-                "🏅 **Achievement unlocked!**\\n" + "\\n".join(lines),
+                "🏅 **Achievement unlocked!**\n" + "\n".join(lines),
                 ephemeral=True
             )
 
@@ -89,10 +90,14 @@ class DragonView(discord.ui.View):
                     member = await interaction.guild.fetch_member(user_id)
                 except Exception:
                     member = None
-            name = member.display_name if member else f"User {user_id}"
-            lines.append(f"**{i}. {name}**\\n— {points} points | {tokens} tokens")
 
-        await interaction.response.send_message("🏆 **Top Dragon Keepers**\\n\\n" + "\\n\\n".join(lines), ephemeral=True)
+            name = member.display_name if member else f"User {user_id}"
+            lines.append(f"**{i}. {name}**\n— {points} points | {tokens} tokens")
+
+        await interaction.response.send_message(
+            "🏆 **Top Dragon Keepers**\n\n" + "\n\n".join(lines),
+            ephemeral=True
+        )
 
     @discord.ui.button(label="Memories", emoji="📖", style=discord.ButtonStyle.secondary, custom_id="dragon_memories")
     async def memories(self, interaction, button):
@@ -102,4 +107,7 @@ class DragonView(discord.ui.View):
             return
 
         lines = [f"• {text}" for text, _ in rows]
-        await interaction.response.send_message("📖 **Dragon Memories**\\n\\n" + "\\n".join(lines), ephemeral=True)
+        await interaction.response.send_message(
+            "📖 **Dragon Memories**\n\n" + "\n".join(lines),
+            ephemeral=True
+        )

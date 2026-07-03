@@ -26,6 +26,7 @@ POSE_FALLBACKS = {
 
 VALID_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp"]
 
+
 def get_asset_path(stage: str, pose: str):
     stage_folder = STAGE_FOLDER.get(stage, "egg")
     pose_options = POSE_FALLBACKS.get(pose, [pose, "idle"])
@@ -37,6 +38,7 @@ def get_asset_path(stage: str, pose: str):
                 return path
 
     return None
+
 
 def attach_visual(embed: discord.Embed, stage: str, pose: str):
     path = get_asset_path(stage, pose)

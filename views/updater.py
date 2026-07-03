@@ -1,6 +1,7 @@
 from database import get_dragon
 from embeds import make_dragon_embed
 
+
 async def update_dragon_message(guild):
     from views.dragon_view import DragonView
 
@@ -17,10 +18,8 @@ async def update_dragon_message(guild):
         embed, file = make_dragon_embed(guild.id)
 
         if file:
-            # To update an attachment image, Discord needs a fresh attachment.
-            await msg.edit(embed=embed, attachments=[], view=DragonView())
             await msg.edit(embed=embed, attachments=[file], view=DragonView())
         else:
             await msg.edit(embed=embed, attachments=[], view=DragonView())
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Failed to update dragon message: {e}")
