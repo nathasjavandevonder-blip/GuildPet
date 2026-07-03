@@ -5,9 +5,7 @@ from views.updater import update_dragon_message
 
 class ShopSelect(discord.ui.Select):
     def __init__(self):
-        options = []
-        for key, item in SHOP.items():
-            options.append(discord.SelectOption(label=item["name"], value=key, description=f"{item['cost']} guild tokens"))
+        options = [discord.SelectOption(label=item["name"], value=key, description=f"{item['cost']} guild tokens") for key, item in SHOP.items()]
         super().__init__(placeholder="Choose an upgrade to buy...", options=options)
 
     async def callback(self, interaction: discord.Interaction):

@@ -19,6 +19,8 @@ DRAGON_COLUMNS = {
     "lair": "TEXT DEFAULT 'Empty Cave'",
     "pose": "TEXT DEFAULT 'waiting'",
     "mood": "TEXT DEFAULT 'Curious'",
+    "weather": "TEXT DEFAULT 'Clear'",
+    "accessory": "TEXT DEFAULT 'None'",
     "last_action_text": "TEXT DEFAULT 'The dragon is waiting for care.'",
     "last_decay": "TEXT",
     "dragon_message": "TEXT DEFAULT 'I am waiting for someone to take care of me.'"
@@ -120,10 +122,7 @@ def init_db():
 def ensure_dragon(guild_id: int):
     con = connect()
     cur = con.cursor()
-    cur.execute(
-        "INSERT OR IGNORE INTO dragon (guild_id, last_decay) VALUES (?, ?)",
-        (guild_id, datetime.now(timezone.utc).isoformat())
-    )
+    cur.execute("INSERT OR IGNORE INTO dragon (guild_id, last_decay) VALUES (?, ?)", (guild_id, datetime.now(timezone.utc).isoformat()))
     con.commit()
     con.close()
 

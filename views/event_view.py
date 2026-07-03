@@ -13,11 +13,9 @@ class EventView(discord.ui.View):
         if not ok:
             await interaction.response.send_message(msg, ephemeral=True)
             return
-
         unlocked = check_achievements(interaction.guild, interaction.user.id)
         await interaction.response.edit_message(content=msg, embed=None, view=None)
         await update_dragon_message(interaction.guild)
-
         if unlocked:
             lines = [f"{ACHIEVEMENTS[key][0]} — {ACHIEVEMENTS[key][1]}" for key in unlocked]
             await interaction.followup.send("🏅 **Achievement unlocked!**\n" + "\n".join(lines), ephemeral=True)
