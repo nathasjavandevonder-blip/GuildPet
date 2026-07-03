@@ -1,0 +1,4 @@
+.env
+guild_dragon.db
+__pycache__/
+*.pyc
