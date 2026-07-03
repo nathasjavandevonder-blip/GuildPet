@@ -1,9 +1,10 @@
 import discord
 from dragon import check_cooldown, apply_action
 from achievements import check_achievements, ACHIEVEMENTS
-from embeds import make_dragon_embed, make_shop_embed, make_profile_embed, make_world_embed
+from embeds import make_dragon_embed, make_shop_embed, make_profile_embed, make_world_embed, make_research_embed
 from memories import get_memories
 from views.shop_view import ShopView
+from views.research_view import ResearchView
 
 class DragonView(discord.ui.View):
     def __init__(self):
@@ -65,6 +66,14 @@ class DragonView(discord.ui.View):
         await interaction.response.send_message(
             embed=make_shop_embed(interaction.guild.id),
             view=ShopView(),
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="Research", emoji="📚", style=discord.ButtonStyle.primary, custom_id="dragon_research_button")
+    async def research(self, interaction, button):
+        await interaction.response.send_message(
+            embed=make_research_embed(interaction.guild.id),
+            view=ResearchView(),
             ephemeral=True
         )
 

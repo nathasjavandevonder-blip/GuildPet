@@ -1,48 +1,39 @@
-# Guild Dragon Bot v2.1 — Living Dragon
+# Guild Dragon Bot v2.2 — Guild Progression
 
 A cooperative Discord guild dragon game.
 
-## New in v2.1
+## New in v2.2
 
-- Dragon moves by itself every 15 minutes
-- Sleep / wake cycle
-- Seasonal dialogue
-- Mood-based living behavior
-- Care requests when hunger, cleanliness, happiness or energy gets low
-- Living status command
-- Main embed shows season and sleeping state
-- Same single-message button gameplay
+- Guild Level system
+- Guild XP
+- Research Points
+- Dragon Research menu
+- Permanent research bonuses
+- Prestige framework
+- Research button on the main dragon message
+- `/dragon_research`
+- `/dragon_progression`
+- `/dragon_prestige`
 
-## Setup
+## New progression loop
 
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python bot.py
-```
+Members care for the dragon → guild earns Guild XP → guild levels up → research points unlock permanent bonuses.
 
-## Discord
+## Discord setup
 
 ```text
 /dragon_setup
 ```
 
-## New command
+## Useful commands
 
 ```text
+/dragon_research
+/dragon_progression
+/dragon_prestige
+/dragon_world
+/dragon_profile
 /dragon_living_status
 ```
 
-## Existing useful commands
-
-```text
-/dragon_world
-/dragon_profile
-/dragon_art_status
-/dragon_needed_images
-/dragon_force_pose
-/dragon_add_tokens
-```
-
-No database reset is required when updating from v2.0. The bot auto-adds missing columns.
+No database reset required. Missing columns are added automatically.

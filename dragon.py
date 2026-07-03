@@ -4,6 +4,7 @@ from database import connect, get_dragon
 from memories import add_memory
 from shop import has_item
 from utils import clamp, get_stage, utc_today
+from progression import research_bonus, add_guild_level_xp
 
 DRAGON_MESSAGES = {
     "feed": ["That was delicious!", "More meat, please!", "I feel stronger already.", "My belly is happy now.", "You always know what I like."],
@@ -118,8 +119,8 @@ def apply_action(guild_id: int, user, action: str):
         "rest": {"energy": 15, "xp": 1, "tokens": 4, "guild_tokens": 2, "points": 4, "pose": "sleeping", "text": "let the dragon rest 😴"},
         "bond": {"bond": 8, "happiness": 3, "xp": 2, "tokens": 8, "guild_tokens": 4, "points": 8, "pose": "bonding", "text": "bonded with the dragon ❤️"},
     }
-    e = effects[action]; d = get_dragon(guild_id); old_stage, _ = get_stage(d["xp"])
-    hunger = clamp(d["hunger"] + e.get("hunger", 0)); happiness = clamp(d["happiness"] + e.get("happiness", 0)); energy = clamp(d["energy"] + e.get("energy", 0)); cleanliness = clamp(d["cleanliness"] + e.get("cleanliness", 0)); bond = clamp(d["bond"] + e.get("bond", 0)); xp = d["xp"] + e.get("xp", 0); guild_tokens = d["guild_tokens"] + e.get("guild_tokens", 0)
+    e = effects[action]; bonus = research_bonus(guild_id, action); d = get_dragon(guild_id); old_stage, _ = get_stage(d["xp"])
+    hunger = clamp(d["hunger"] + e.get("hunger", 0) + bonus.get("hunger", 0)); happiness = clamp(d["happiness"] + e.get("happiness", 0) + bonus.get("happiness", 0)); energy = clamp(d["energy"] + e.get("energy", 0) + bonus.get("energy", 0)); cleanliness = clamp(d["cleanliness"] + e.get("cleanliness", 0) + bonus.get("cleanliness", 0)); bond = clamp(d["bond"] + e.get("bond", 0) + bonus.get("bond", 0)); xp = d["xp"] + e.get("xp", 0) + bonus.get("xp", 0); guild_tokens = d["guild_tokens"] + e.get("guild_tokens", 0)
     lifetime_guild_tokens = d["lifetime_guild_tokens"] + e.get("guild_tokens", 0)
     dragon_message = random.choice(DRAGON_MESSAGES[action]); text = f"**{user.display_name}** {e['text']} and earned **{e['tokens']} Dragon Tokens**."
     new_stage, _ = get_stage(xp)
@@ -131,6 +132,7 @@ def apply_action(guild_id: int, user, action: str):
     streak, new_day = add_player_reward(guild_id, user.id, e["tokens"], e["points"], action)
     if new_day and streak > 1:
         add_memory(guild_id, f"{user.display_name} reached a {streak} day keeper streak.")
+    add_guild_level_xp(guild_id, e.get("points", 0) + bonus.get("guild_level_xp", 0))
     update_personality(guild_id)
 
 def decay_dragon(guild_id: int):

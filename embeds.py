@@ -5,6 +5,7 @@ from shop import SHOP, has_item
 from achievements import ACHIEVEMENTS, get_user_achievements
 from art_engine import attach_visual, art_status, needed_images_for_stage
 from world import current_world, world_progress_bar, unlocked_world_text
+from progression import RESEARCH, has_research, level_needed
 
 def make_dragon_embed(guild_id: int):
     d = get_dragon(guild_id)
@@ -56,6 +57,16 @@ def make_dragon_embed(guild_id: int):
             f"**Lifetime:** {d['lifetime_guild_tokens']} tokens\n"
             f"{world_progress_bar(d['lifetime_guild_tokens'])}\n"
             f"**Next:** {next_world}"
+        ),
+        inline=False
+    )
+
+    embed.add_field(
+        name="🐲 Guild Progression",
+        value=(
+            f"Level **{d['guild_level']}** · Prestige **{d['prestige']}**\\n"
+            f"Research Points: **{d['research_points']}**\\n"
+            f"{d['guild_level_xp']} / {level_needed(d['guild_level'])} Guild XP"
         ),
         inline=False
     )
@@ -201,4 +212,70 @@ def make_needed_images_embed(guild_id: int):
         ),
         inline=False
     )
+    return embed
+
+
+def make_research_embed(guild_id: int):
+    d = get_dragon(guild_id)
+
+    embed = discord.Embed(
+        title="📚 Dragon Research",
+        description=(
+            f"Guild Level: **{d['guild_level']}**\n"
+            f"Guild XP: **{d['guild_level_xp']} / {level_needed(d['guild_level'])}**\n"
+            f"Research Points: **{d['research_points']}**\n"
+            f"Prestige: **{d['prestige']}**\n\n"
+            f"Research unlocks permanent bonuses for the whole guild."
+        ),
+        color=0x7B2CFF
+    )
+
+    for key, item in RESEARCH.items():
+        status = "✅ Unlocked" if has_research(guild_id, key) else f"Cost: {item['cost']} RP"
+        embed.add_field(
+            name=f"{item['name']} — {status}",
+            value=item["description"],
+            inline=False
+        )
+
+    return embed
+
+
+def make_progression_embed(guild_id: int):
+    d = get_dragon(guild_id)
+    needed = level_needed(d["guild_level"])
+
+    embed = discord.Embed(
+        title="🐲 Guild Progression",
+        description=(
+            f"Guild Level: **{d['guild_level']}**\n"
+            f"Guild XP: **{d['guild_level_xp']} / {needed}**\n"
+            f"Research Points: **{d['research_points']}**\n"
+            f"Prestige: **{d['prestige']}**\n\n"
+            f"Guild XP is earned whenever members care for the dragon or claim events."
+        ),
+        color=0x7B2CFF
+    )
+
+    unlocked = []
+    locked = []
+
+    for key, item in RESEARCH.items():
+        if has_research(guild_id, key):
+            unlocked.append(f"✅ {item['name']}")
+        else:
+            locked.append(f"🔒 {item['name']} ({item['cost']} RP)")
+
+    embed.add_field(
+        name="Unlocked Research",
+        value="\n".join(unlocked) if unlocked else "No research yet.",
+        inline=False
+    )
+
+    embed.add_field(
+        name="Locked Research",
+        value="\n".join(locked) if locked else "All research unlocked.",
+        inline=False
+    )
+
     return embed

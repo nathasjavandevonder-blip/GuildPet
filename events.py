@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 import discord
 from database import connect
 from dragon import add_player_reward
+from progression import add_guild_level_xp
 
 EVENTS = [
     ("mouse", "🐭 Mouse spotted!", "The dragon spotted a mouse running through the lair!"),
@@ -74,6 +75,7 @@ def claim_event(guild_id: int, user):
     con.close()
 
     add_player_reward(guild_id, user.id, reward_tokens, reward_tokens, "event")
+    add_guild_level_xp(guild_id, reward_tokens)
     return True, f"🎁 **{user.display_name}** claimed the event and won **{reward_tokens} tokens** + **{reward_xp} XP**!"
 
 def random_event_embed():
