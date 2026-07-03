@@ -43,7 +43,7 @@ async def dragon_setup(interaction: discord.Interaction):
 
 @bot.tree.command(name="dragon_world", description="Show the guild's dragon world progression.")
 async def dragon_world(interaction: discord.Interaction):
-    await interaction.response.send_message(embed=make_world_embed, make_research_embed, make_progression_embed(interaction.guild.id), ephemeral=True)
+ await interaction.response.send_message(embed=make_world_embed(interaction.guild.id), ephemeral=True)   await interaction.response.send_message(embed=make_world_embed, make_research_embed, make_progression_embed(interaction.guild.id), ephemeral=True)
 
 @bot.tree.command(name="dragon_name", description="Rename your guild dragon.")
 @app_commands.checks.has_permissions(manage_guild=True)
