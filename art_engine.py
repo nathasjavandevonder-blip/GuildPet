@@ -68,22 +68,42 @@ def accessory_asset(accessory: str):
     accessory = (accessory or "none").lower().replace(" ", "_")
     return find_first([Path(ASSET_BASE_PATH) / "accessories" / accessory / "idle"])
 
-def best_visual(stage: str, pose: str, lair: str, weather: str):
-    return dragon_asset(stage, pose) or lair_asset(lair, weather)
+def event_asset(event_key: str):
+    event_key = (event_key or "none").lower().replace(" ", "_")
+    return find_first([
+        Path(ASSET_BASE_PATH) / "events" / event_key,
+        Path(ASSET_BASE_PATH) / "events" / "idle",
+    ])
 
-def attach_visual(embed: discord.Embed, stage: str, pose: str, lair: str, weather: str):
-    path = best_visual(stage, pose, lair, weather)
+def world_asset(world_name: str):
+    safe = (world_name or "empty_cave").lower()
+    for ch in [" ", "🪨", "🌾", "💰", "🏳️", "💎", "🧸", "🔥", "🌊", "🗿", "🏰", "☁️", "🌌"]:
+        safe = safe.replace(ch, "_")
+    safe = "_".join([x for x in safe.split("_") if x])
+    return find_first([
+        Path(ASSET_BASE_PATH) / "world" / safe,
+        Path(ASSET_BASE_PATH) / "world" / "idle",
+    ])
+
+def best_visual(stage: str, pose: str, lair: str, weather: str, visual_event: str = "None", world_name: str = ""):
+    # Priority: event artwork > dragon pose > world mural > lair.
+    return event_asset(visual_event) or dragon_asset(stage, pose) or world_asset(world_name) or lair_asset(lair, weather)
+
+def attach_visual(embed: discord.Embed, stage: str, pose: str, lair: str, weather: str, visual_event: str = "None", world_name: str = ""):
+    path = best_visual(stage, pose, lair, weather, visual_event, world_name)
     if not path:
         return embed, None
     file = discord.File(str(path), filename=path.name)
     embed.set_image(url=f"attachment://{path.name}")
     return embed, file
 
-def art_status(stage: str, pose: str, lair: str, weather: str, accessory: str):
+def art_status(stage: str, pose: str, lair: str, weather: str, accessory: str, visual_event: str = "None", world_name: str = ""):
     return {
         "dragon_image": str(dragon_asset(stage, pose) or "missing"),
         "lair_image": str(lair_asset(lair, weather) or "missing"),
         "accessory_image": str(accessory_asset(accessory) or "missing"),
+        "event_image": str(event_asset(visual_event) or "missing"),
+        "world_image": str(world_asset(world_name) or "missing"),
         "time_of_day": time_of_day(),
         "weather": weather,
     }

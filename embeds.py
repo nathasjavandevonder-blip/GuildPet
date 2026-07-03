@@ -6,10 +6,8 @@ from achievements import ACHIEVEMENTS, get_user_achievements
 from art_engine import attach_visual, art_status, needed_images_for_stage
 from world import current_world, world_progress_bar, unlocked_world_text
 
-
 def make_dragon_embed(guild_id: int):
     d = get_dragon(guild_id)
-
     stage, emoji = get_stage(d["xp"])
     stage_title, _ = get_stage_title(d["xp"])
     progress, current_xp, next_xp, next_name = next_stage_info(d["xp"])
@@ -49,11 +47,7 @@ def make_dragon_embed(guild_id: int):
         inline=False
     )
 
-    embed.add_field(
-        name="💞 Guild Bond",
-        value=heart_bar(d["bond"]),
-        inline=False
-    )
+    embed.add_field(name="💞 Guild Bond", value=heart_bar(d["bond"]), inline=False)
 
     embed.add_field(
         name="🌍 Community World",
@@ -65,23 +59,12 @@ def make_dragon_embed(guild_id: int):
         inline=False
     )
 
-    embed.add_field(
-        name="🪙 Guild Tokens",
-        value=f"Spendable: **{d['guild_tokens']}**",
-        inline=True
-    )
-
-    embed.add_field(
-        name="📝 Last action",
-        value=d["last_action_text"],
-        inline=False
-    )
-
+    embed.add_field(name="🪙 Guild Tokens", value=f"Spendable: **{d['guild_tokens']}**", inline=True)
+    embed.add_field(name="📝 Last action", value=d["last_action_text"], inline=False)
     embed.set_footer(text="Use /dragon_world, /dragon_profile, /dragon_art_status or /dragon_needed_images for more info.")
 
-    embed, file = attach_visual(embed, stage, d["pose"], d["lair"], d["weather"])
+    embed, file = attach_visual(embed, stage, d["pose"], d["lair"], d["weather"], d["visual_event"], world_now[1])
     return embed, file
-
 
 def make_world_embed(guild_id: int):
     d = get_dragon(guild_id)
@@ -103,19 +86,11 @@ def make_world_embed(guild_id: int):
         ),
         color=0x7B2CFF
     )
-
-    embed.add_field(
-        name="Unlocked World Features",
-        value=unlocked_world_text(d["lifetime_guild_tokens"]),
-        inline=False
-    )
-
+    embed.add_field(name="Unlocked World Features", value=unlocked_world_text(d["lifetime_guild_tokens"]), inline=False)
     return embed
-
 
 def make_shop_embed(guild_id: int):
     d = get_dragon(guild_id)
-
     embed = discord.Embed(
         title="🛒 Guild Dragon Shop",
         description=(
@@ -125,17 +100,10 @@ def make_shop_embed(guild_id: int):
         ),
         color=0xE2B714
     )
-
     for key, item in SHOP.items():
         status = "✅ Bought" if has_item(guild_id, key) else f"Cost: {item['cost']}"
-        embed.add_field(
-            name=f"{item['name']} — {status}",
-            value=item["description"],
-            inline=False
-        )
-
+        embed.add_field(name=f"{item['name']} — {status}", value=item["description"], inline=False)
     return embed
-
 
 def make_profile_embed(guild, member):
     con = connect()
@@ -167,7 +135,6 @@ def make_profile_embed(guild, member):
         ),
         color=0x7B2CFF
     )
-
     embed.add_field(
         name="Care Stats",
         value=(
@@ -181,20 +148,14 @@ def make_profile_embed(guild, member):
         ),
         inline=False
     )
-
-    embed.add_field(
-        name="Achievements",
-        value="\n".join(achievement_lines) if achievement_lines else "No achievements yet.",
-        inline=False
-    )
-
+    embed.add_field(name="Achievements", value="\n".join(achievement_lines) if achievement_lines else "No achievements yet.", inline=False)
     return embed
-
 
 def make_art_status_embed(guild_id: int):
     d = get_dragon(guild_id)
     stage, _ = get_stage(d["xp"])
-    status = art_status(stage, d["pose"], d["lair"], d["weather"], d["accessory"])
+    world_now, _ = current_world(d["lifetime_guild_tokens"])
+    status = art_status(stage, d["pose"], d["lair"], d["weather"], d["accessory"], d["visual_event"], world_now[1])
 
     embed = discord.Embed(
         title="🎨 Dragon Art Engine Status",
@@ -204,17 +165,18 @@ def make_art_status_embed(guild_id: int):
             f"**Lair:** {d['lair']}\n"
             f"**Weather:** {status['weather']}\n"
             f"**Time:** {status['time_of_day']}\n"
-            f"**Accessory:** {d['accessory']}"
+            f"**Accessory:** {d['accessory']}\n"
+            f"**Event visual:** {d['visual_event']}\n"
+            f"**World visual:** {world_now[1]}"
         ),
         color=0x7B2CFF
     )
-
     embed.add_field(name="Dragon image", value=f"`{status['dragon_image']}`", inline=False)
     embed.add_field(name="Lair image", value=f"`{status['lair_image']}`", inline=False)
+    embed.add_field(name="World image", value=f"`{status['world_image']}`", inline=False)
+    embed.add_field(name="Event image", value=f"`{status['event_image']}`", inline=False)
     embed.add_field(name="Accessory image", value=f"`{status['accessory_image']}`", inline=False)
-
     return embed
-
 
 def make_needed_images_embed(guild_id: int):
     d = get_dragon(guild_id)
@@ -226,11 +188,16 @@ def make_needed_images_embed(guild_id: int):
         description=f"Current stage: **{stage}**\nUpload images with these names:",
         color=0x7B2CFF
     )
-
+    embed.add_field(name="Files", value="\n".join(f"`{x}`" for x in needed), inline=False)
     embed.add_field(
-        name="Files",
-        value="\n".join(f"`{x}`" for x in needed),
+        name="Optional v2.0 images",
+        value=(
+            "`assets/world/empty_cave.png`\n"
+            "`assets/world/soft_nest.png`\n"
+            "`assets/events/treasure.png`\n"
+            "`assets/events/merchant.png`\n"
+            "`assets/events/storm.png`"
+        ),
         inline=False
     )
-
     return embed

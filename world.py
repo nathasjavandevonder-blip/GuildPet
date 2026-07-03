@@ -16,33 +16,24 @@ WORLD_MILESTONES = [
 def current_world(lifetime_tokens: int):
     current = WORLD_MILESTONES[0]
     next_item = None
-
     for i, milestone in enumerate(WORLD_MILESTONES):
         if lifetime_tokens >= milestone[0]:
             current = milestone
-            if i + 1 < len(WORLD_MILESTONES):
-                next_item = WORLD_MILESTONES[i + 1]
+            next_item = WORLD_MILESTONES[i + 1] if i + 1 < len(WORLD_MILESTONES) else None
         else:
             break
-
     return current, next_item
 
 def world_progress_bar(lifetime_tokens: int):
     current, next_item = current_world(lifetime_tokens)
     if not next_item:
-        return "🟪" * 10 + " MAX"
-
+        return "🟦" * 10 + " MAX"
     start = current[0]
     end = next_item[0]
     progress = int(((lifetime_tokens - start) / (end - start)) * 100)
     progress = max(0, min(100, progress))
     filled = round((progress / 100) * 10)
     return "🟦" * filled + "⬜" * (10 - filled) + f" {progress}%"
-
-def unlocked_world_lines(lifetime_tokens: int, limit: int = 8):
-    unlocked = [m for m in WORLD_MILESTONES if lifetime_tokens >= m[0]]
-    latest = unlocked[-limit:]
-    return [f"{icon} **{name}**" for _, icon_name, desc in []]  # not used
 
 def unlocked_world_text(lifetime_tokens: int):
     unlocked = [m for m in WORLD_MILESTONES if lifetime_tokens >= m[0]]

@@ -13,9 +13,11 @@ SHOP = {
 }
 
 def has_item(guild_id: int, item_key: str):
-    con = connect(); cur = con.cursor()
+    con = connect()
+    cur = con.cursor()
     cur.execute("SELECT bought FROM shop_items WHERE guild_id=? AND item_key=?", (guild_id, item_key))
-    row = cur.fetchone(); con.close()
+    row = cur.fetchone()
+    con.close()
     return bool(row and row[0])
 
 def buy_item(guild_id: int, item_key: str):
@@ -25,11 +27,13 @@ def buy_item(guild_id: int, item_key: str):
         return False, "This upgrade has already been bought."
     if d["guild_tokens"] < item["cost"]:
         return False, f"The guild needs **{item['cost']} Guild Tokens**. Current: **{d['guild_tokens']}**."
-    con = connect(); cur = con.cursor()
+    con = connect()
+    cur = con.cursor()
     cur.execute("UPDATE dragon SET guild_tokens = guild_tokens - ? WHERE guild_id=?", (item["cost"], guild_id))
     cur.execute("INSERT OR REPLACE INTO shop_items (guild_id, item_key, bought) VALUES (?, ?, 1)", (guild_id, item_key))
     if item["type"] == "lair":
         cur.execute("UPDATE dragon SET lair=?, last_action_text=?, dragon_message=? WHERE guild_id=?", (item["name"], f"🏡 The guild unlocked **{item['name']}**!", f"I love my new {item['name']}!", guild_id))
         add_memory(guild_id, f"The guild unlocked the lair upgrade: {item['name']}.")
-    con.commit(); con.close()
+    con.commit()
+    con.close()
     return True, f"✅ The guild bought **{item['name']}**!"

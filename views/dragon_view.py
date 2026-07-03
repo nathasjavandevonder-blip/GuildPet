@@ -5,7 +5,6 @@ from embeds import make_dragon_embed, make_shop_embed, make_profile_embed, make_
 from memories import get_memories
 from views.shop_view import ShopView
 
-
 class DragonView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
