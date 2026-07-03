@@ -24,7 +24,11 @@ async def dragon_setup(interaction: discord.Interaction):
     ensure_dragon(interaction.guild.id)
     await interaction.response.send_message("Creating Guild Dragon message...", ephemeral=True)
 
-    msg = await interaction.channel.send(embed=make_dragon_embed(interaction.guild.id), view=DragonView())
+    embed, file = make_dragon_embed(interaction.guild.id)
+    if file:
+        msg = await interaction.channel.send(embed=embed, file=file, view=DragonView())
+    else:
+        msg = await interaction.channel.send(embed=embed, view=DragonView())
 
     con = connect()
     cur = con.cursor()

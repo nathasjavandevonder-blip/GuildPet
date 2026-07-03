@@ -14,6 +14,13 @@ async def update_dragon_message(guild):
 
     try:
         msg = await channel.fetch_message(d["message_id"])
-        await msg.edit(embed=make_dragon_embed(guild.id), view=DragonView())
+        embed, file = make_dragon_embed(guild.id)
+
+        if file:
+            # To update an attachment image, Discord needs a fresh attachment.
+            await msg.edit(embed=embed, attachments=[], view=DragonView())
+            await msg.edit(embed=embed, attachments=[file], view=DragonView())
+        else:
+            await msg.edit(embed=embed, attachments=[], view=DragonView())
     except Exception:
         pass

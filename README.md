@@ -1,29 +1,44 @@
-# Guild Dragon Bot
+# v1.1 Visual Engine Update
 
-A button-based Discord guild pet / dragon minigame.
+Copy these files into your GitHub repo and commit:
 
-## Setup
+- `config.py`
+- `visuals.py`
+- `embeds.py`
+- `bot.py`
+- `views/dragon_view.py`
+- `views/updater.py`
 
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
+Also add the `assets/` folders.
 
-Create `.env`:
+## Image names
 
-```env
-DISCORD_TOKEN=your_token_here
-```
-
-Run:
-
-```bash
-python bot.py
-```
-
-In Discord:
+Put images here:
 
 ```text
-/dragon_setup
+assets/dragons/egg/idle.png
+assets/dragons/egg/eating.png
+assets/dragons/egg/sleeping.png
+assets/dragons/hatchling/idle.png
+assets/dragons/hatchling/eating.png
+assets/dragons/hatchling/training.png
+```
+
+Supported extensions:
+
+```text
+.png
+.jpg
+.jpeg
+.webp
+```
+
+If an exact pose is missing, the bot falls back to `idle.png`.
+
+## VPS update
+
+```bash
+cd ~/bot/dragonbot
+git pull
+sudo systemctl restart dragonbot
 ```

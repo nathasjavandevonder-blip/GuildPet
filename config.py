@@ -6,21 +6,9 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN") or os.getenv("TOKEN")
 DB_FILE = os.getenv("DB_FILE", "guild_dragon.db")
 
-# Put real Discord image URLs here later.
-STAGE_IMAGES = {
-    "Egg": "",
-    "Hatchling": "",
-    "Young Dragon": "",
-    "Adult Dragon": "",
-    "Ancient Dragon": "",
-    "Elder Dragon": "",
-}
+# Set this to a Discord channel ID where the bot may upload generated/attached images later.
+# For now this is optional.
+ASSET_UPLOAD_CHANNEL_ID = int(os.getenv("ASSET_UPLOAD_CHANNEL_ID", "0"))
 
-LAIR_IMAGES = {
-    "Empty Cave": "",
-    "Moss Nest": "",
-    "Crystal Nest": "",
-    "Lava Nest": "",
-    "Royal Dragon Hall": "",
-    "Sky Fortress": "",
-}
+# Local fallback images. Put PNG/JPG/WebP files inside assets/dragons/<stage>/<pose>.png
+ASSET_BASE_PATH = "assets"

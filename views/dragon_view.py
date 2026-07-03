@@ -21,12 +21,16 @@ class DragonView(discord.ui.View):
         apply_action(interaction.guild.id, interaction.user, action)
         unlocked = check_achievements(interaction.guild, interaction.user.id)
 
-        await interaction.response.edit_message(embed=make_dragon_embed(interaction.guild.id), view=DragonView())
+        embed, file = make_dragon_embed(interaction.guild.id)
+        if file:
+            await interaction.response.edit_message(embed=embed, attachments=[file], view=DragonView())
+        else:
+            await interaction.response.edit_message(embed=embed, attachments=[], view=DragonView())
 
         if unlocked:
             lines = [f"{ACHIEVEMENTS[key][0]} — {ACHIEVEMENTS[key][1]}" for key in unlocked]
             await interaction.followup.send(
-                "🏅 **Achievement unlocked!**\n" + "\n".join(lines),
+                "🏅 **Achievement unlocked!**\\n" + "\\n".join(lines),
                 ephemeral=True
             )
 
@@ -86,9 +90,9 @@ class DragonView(discord.ui.View):
                 except Exception:
                     member = None
             name = member.display_name if member else f"User {user_id}"
-            lines.append(f"**{i}. {name}**\n— {points} points | {tokens} tokens")
+            lines.append(f"**{i}. {name}**\\n— {points} points | {tokens} tokens")
 
-        await interaction.response.send_message("🏆 **Top Dragon Keepers**\n\n" + "\n\n".join(lines), ephemeral=True)
+        await interaction.response.send_message("🏆 **Top Dragon Keepers**\\n\\n" + "\\n\\n".join(lines), ephemeral=True)
 
     @discord.ui.button(label="Memories", emoji="📖", style=discord.ButtonStyle.secondary, custom_id="dragon_memories")
     async def memories(self, interaction, button):
@@ -98,4 +102,4 @@ class DragonView(discord.ui.View):
             return
 
         lines = [f"• {text}" for text, _ in rows]
-        await interaction.response.send_message("📖 **Dragon Memories**\n\n" + "\n".join(lines), ephemeral=True)
+        await interaction.response.send_message("📖 **Dragon Memories**\\n\\n" + "\\n".join(lines), ephemeral=True)
