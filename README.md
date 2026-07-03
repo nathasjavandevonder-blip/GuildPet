@@ -1,23 +1,39 @@
-# Guild Dragon Bot v2.3 — Living Events
+# Guild Dragon Bot v3.0 Foundation
 
-## New in v2.3
+This is a cleaned, more stable project structure.
 
-- Deeper sleeping behavior
-- Mood-based living quotes
-- Dragon traits
-- World events
-- Daily guild gift
-- Affection events after bonding
-- More detailed egg growth: Tiny Egg, Large Egg, Cracked Egg, Almost Hatching
-- `/dragon_trait`
+## What changed
 
-## Existing systems included
+- `bot.py` is now a clean launcher with startup tasks.
+- Slash commands are split into cogs:
+  - `cogs/setup.py`
+  - `cogs/admin.py`
+  - `cogs/progression.py`
+  - `cogs/profile.py`
+- Startup now prints:
+  - loaded extensions
+  - `Synced X commands`
+  - bot version
+- `.gitignore` now blocks:
+  - `.env`
+  - `guild_dragon.db`
+  - `__pycache__`
+  - `.pyc` files
 
-- v2.1 Living Dragon
-- v2.2 Guild Progression
+## Features preserved
+
+- Living dragon
+- Dragon buttons
+- Shop
 - Research
-- Prestige
+- Guild progression
 - World progression
+- Daily gifts
+- Traits
+- Profiles
+- Leaderboard
+- Memories
+- Random events
 - Art engine
 
 ## Update
@@ -31,7 +47,19 @@ cd ~/bot/dragonbot
 git pull
 python -m py_compile bot.py
 sudo systemctl restart dragonbot
-sudo systemctl status dragonbot --no-pager -l
+journalctl -u dragonbot -n 60 --no-pager
+```
+
+You should see:
+
+```text
+Loaded extension: cogs.setup
+Loaded extension: cogs.admin
+Loaded extension: cogs.progression
+Loaded extension: cogs.profile
+Synced X commands
+Logged in as Sky Dragon#1048
+Guild Dragon Bot v3.0 Foundation
 ```
 
 No database reset required.
