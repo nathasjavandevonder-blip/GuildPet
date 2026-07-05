@@ -8,6 +8,7 @@ from art_engine import attach_visual, art_status, needed_images_for_stage
 from world import current_world, world_progress_bar, unlocked_world_text
 from progression import RESEARCH, has_research, level_needed
 from traits import trait_description
+from rpg import get_inventory, get_quests, get_equipment, RARITY_EMOJI
 from visual_theme import (
     compact_care_line,
     xp_bar,
@@ -72,6 +73,16 @@ def make_dragon_embed(guild_id: int):
             f"{compact_care_line('😊', 'Happy', d['happiness'])}\n"
             f"{compact_care_line('⚡', 'Energy', d['energy'])}\n"
             f"{compact_care_line('💧', 'Clean', d['cleanliness'])}"
+        ),
+        inline=False,
+    )
+
+    embed.add_field(
+        name="📊 RPG Stats",
+        value=(
+            f"❤️ **Health:** `{min(100, 70 + d['bond'] // 4)}`  •  💪 **Strength:** `{5 + d['xp'] // 55000}`\n"
+            f"🛡️ **Defense:** `{5 + d['cleanliness'] // 10}`  •  ⚡ **Agility:** `{5 + d['energy'] // 10}`\n"
+            f"🧠 **Intelligence:** `{5 + d['research_points'] // 25}`  •  🍀 **Luck:** `{5 + d['happiness'] // 10}`"
         ),
         inline=False,
     )
@@ -310,3 +321,39 @@ def make_trait_embed(guild_id: int):
         description=f"Trait: **{trait}**\n{desc}\n\nThe dragon's trait affects some living dialogue and behavior.",
         color=0x7B2CFF,
     )
+
+
+def make_inventory_embed(guild_id: int):
+    rows = get_inventory(guild_id)
+    if not rows:
+        desc = "The guild inventory is empty. Send the dragon on adventures to find loot."
+    else:
+        lines = []
+        for row in rows:
+            icon = RARITY_EMOJI.get(row["rarity"], "⚪")
+            lines.append(f"{icon} **{row['item_name']}** ×{row['quantity']} — `{row['rarity']} {row['item_type']}`")
+        desc = "\n".join(lines)
+    embed = discord.Embed(title="🎒 Guild Dragon Inventory", description=desc, color=0x2ECC71)
+    embed.set_footer(text="Loot is shared by the guild dragon.")
+    return embed
+
+def make_quests_embed(guild_id: int):
+    rows = get_quests(guild_id)
+    lines = []
+    for row in rows:
+        done = row["progress"] >= row["target"]
+        icon = "✅" if done else "📜"
+        claimed = " • claimed" if row["claimed"] else ""
+        lines.append(f"{icon} **{row['title']}**{claimed}\n{row['description']}\nProgress: `{row['progress']} / {row['target']}` • Reward: {row['reward_text']}")
+    return discord.Embed(title="📜 Dragon Quests", description="\n\n".join(lines) if lines else "No quests yet.", color=0xF1C40F)
+
+def make_lair_embed(guild_id: int):
+    d = get_dragon(guild_id)
+    equipment = get_equipment(guild_id)
+    eq_text = "No equipment yet."
+    if equipment:
+        eq_text = "\n".join([f"**{r['slot']}**: {r['item_name']} (`{r['rarity']}`) — {r['bonus_text']}" for r in equipment])
+    embed = discord.Embed(title="🏡 Dragon Lair & RPG Overview", description=(f"**Lair:** `{d['lair']}`\n**Trait:** `{d['dragon_trait']}`\n**Accessory:** `{d['accessory']}`\n**Mood:** `{d['mood']}`\n\nFuture lair upgrades: Forge, Garden, Library and Training Grounds."), color=0x9B59B6)
+    embed.add_field(name="🛡️ Equipment", value=eq_text, inline=False)
+    embed.add_field(name="📊 Derived RPG Stats", value=(f"❤️ Health: **{min(100, 70 + d['bond'] // 4)}**\n💪 Strength: **{5 + d['xp'] // 55000}**\n🛡 Defense: **{5 + d['cleanliness'] // 10}**\n⚡ Agility: **{5 + d['energy'] // 10}**\n🧠 Intelligence: **{5 + d['research_points'] // 25}**\n🍀 Luck: **{5 + d['happiness'] // 10}**"), inline=False)
+    return embed

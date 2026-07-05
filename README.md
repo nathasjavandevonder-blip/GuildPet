@@ -47,3 +47,18 @@ Then test:
 ```
 
 No database reset required.
+
+
+## GuildPet v4 Stable RPG Update
+
+Adds Adventure routes, Inventory, Quests, Lair/RPG stats, loot rarity, monsters, boss chance, and keeps XP x55 + energy rebalance.
+
+Install:
+```bash
+cd /root/bot/dragonbot
+unzip -o GuildPet_v4_stable_full_update.zip
+./venv/bin/python migrate_v4.py
+./venv/bin/python -m py_compile bot.py config.py database.py dragon.py utils.py adventures.py rpg.py embeds.py views/dragon_view.py views/adventure_view.py cogs/adventures.py
+sudo systemctl restart dragonbot
+journalctl -u dragonbot -n 80 --no-pager
+```

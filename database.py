@@ -180,6 +180,48 @@ def init_db():
             )
             """)
 
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS inventory (
+                guild_id INTEGER,
+                user_id INTEGER DEFAULT 0,
+                item_key TEXT,
+                item_name TEXT,
+                rarity TEXT DEFAULT 'Common',
+                item_type TEXT DEFAULT 'Material',
+                quantity INTEGER DEFAULT 0,
+                first_found_at TEXT,
+                PRIMARY KEY (guild_id, user_id, item_key)
+            )
+            """)
+
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS equipment (
+                guild_id INTEGER,
+                slot TEXT,
+                item_key TEXT,
+                item_name TEXT,
+                rarity TEXT DEFAULT 'Common',
+                bonus_text TEXT DEFAULT '',
+                equipped_at TEXT,
+                PRIMARY KEY (guild_id, slot)
+            )
+            """)
+
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS quests (
+                guild_id INTEGER,
+                quest_key TEXT,
+                title TEXT,
+                description TEXT,
+                progress INTEGER DEFAULT 0,
+                target INTEGER DEFAULT 1,
+                reward_text TEXT DEFAULT '',
+                claimed INTEGER DEFAULT 0,
+                updated_at TEXT,
+                PRIMARY KEY (guild_id, quest_key)
+            )
+            """)
+
     execute_with_retry(work)
 
 def ensure_dragon(guild_id: int):

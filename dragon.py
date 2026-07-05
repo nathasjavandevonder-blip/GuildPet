@@ -7,6 +7,7 @@ from shop import has_item
 from utils import clamp, get_stage, utc_today
 from progression import research_bonus, add_guild_level_xp
 from living import affection_event_text
+from rpg import progress_quest, set_quest_progress
 
 DRAGON_MESSAGES = {
     "feed": [
@@ -390,6 +391,8 @@ def apply_action(guild_id: int, user, action: str):
     if new_day and streak > 1:
         add_memory(guild_id, f"{user.display_name} reached a {streak} day keeper streak.")
 
+    progress_quest(guild_id, "care_daily", 1)
+    set_quest_progress(guild_id, "bond_story", bond)
     add_guild_level_xp(guild_id, e.get("points", 0) + bonus.get("guild_level_xp", 0))
     update_personality(guild_id)
 

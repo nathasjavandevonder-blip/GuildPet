@@ -2,7 +2,7 @@ import discord
 
 from dragon import check_cooldown, apply_action
 from achievements import check_achievements, ACHIEVEMENTS
-from embeds import make_dragon_embed, make_shop_embed, make_profile_embed, make_research_embed
+from embeds import make_dragon_embed, make_shop_embed, make_profile_embed, make_research_embed, make_inventory_embed, make_quests_embed, make_lair_embed
 from memories import get_memories
 from adventures import make_adventure_embed
 from views.shop_view import ShopView
@@ -86,6 +86,19 @@ class DragonView(discord.ui.View):
             view=AdventureView(),
             ephemeral=True,
         )
+
+
+    @discord.ui.button(label="Inventory", emoji="🎒", style=discord.ButtonStyle.success, custom_id="dragon_inventory_button")
+    async def inventory(self, interaction, button):
+        await interaction.response.send_message(embed=make_inventory_embed(interaction.guild.id), ephemeral=True)
+
+    @discord.ui.button(label="Quests", emoji="📜", style=discord.ButtonStyle.success, custom_id="dragon_quests_button")
+    async def quests(self, interaction, button):
+        await interaction.response.send_message(embed=make_quests_embed(interaction.guild.id), ephemeral=True)
+
+    @discord.ui.button(label="Lair", emoji="🏡", style=discord.ButtonStyle.secondary, custom_id="dragon_lair_button")
+    async def lair(self, interaction, button):
+        await interaction.response.send_message(embed=make_lair_embed(interaction.guild.id), ephemeral=True)
 
     @discord.ui.button(label="Leaderboard", emoji="🏆", style=discord.ButtonStyle.primary, custom_id="dragon_leaderboard")
     async def leaderboard(self, interaction, button):
