@@ -1,5 +1,6 @@
 from pathlib import Path
 import discord
+
 from config import ASSET_BASE_PATH
 from utils import time_of_day
 
@@ -39,6 +40,7 @@ POSE_FALLBACKS = {
 
 VALID_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp"]
 
+
 def find_first(paths):
     for path in paths:
         for ext in VALID_EXTENSIONS:
@@ -46,6 +48,7 @@ def find_first(paths):
             if candidate.exists():
                 return candidate
     return None
+
 
 def safe_key(text: str):
     text = (text or "empty_cave").lower()
@@ -60,22 +63,21 @@ def safe_key(text: str):
         out = out.replace("__", "_")
     return out.strip("_") or "empty_cave"
 
+
 def dragon_asset(stage: str, pose: str):
     stage_folder = STAGE_FOLDER.get(stage, "egg")
     pose_options = POSE_FALLBACKS.get(pose, [safe_key(pose), "idle"])
 
     paths = []
     for pose_name in pose_options:
-        # Preferred naming scheme, e.g. hatchling_idle.png
-        paths.append(
-            Path(ASSET_BASE_PATH) / "dragons" / stage_folder / f"{stage_folder}_{pose_name}"
-        )
-        # Backwards-compatible naming scheme, e.g. idle.png
-        paths.append(
-            Path(ASSET_BASE_PATH) / "dragons" / stage_folder / pose_name
-        )
+        pose_name = safe_key(pose_name)
+        # New asset naming: hatchling_idle.png / young_dragon_training.png
+        paths.append(Path(ASSET_BASE_PATH) / "dragons" / stage_folder / f"{stage_folder}_{pose_name}")
+        # Old asset naming: idle.png / training.png
+        paths.append(Path(ASSET_BASE_PATH) / "dragons" / stage_folder / pose_name)
 
     return find_first(paths)
+
 
 def lair_asset(lair: str, weather: str):
     lair_folder = LAIR_FOLDER.get(lair, safe_key(lair))
@@ -89,9 +91,11 @@ def lair_asset(lair: str, weather: str):
     ]
     return find_first(paths)
 
+
 def accessory_asset(accessory: str):
     accessory = safe_key(accessory or "none")
     return find_first([Path(ASSET_BASE_PATH) / "accessories" / accessory / "idle"])
+
 
 def event_asset(event_key: str):
     event_key = safe_key(event_key or "none")
@@ -102,6 +106,7 @@ def event_asset(event_key: str):
         Path(ASSET_BASE_PATH) / "events" / "idle",
     ])
 
+
 def world_asset(world_name: str):
     safe = safe_key(world_name)
     return find_first([
@@ -109,8 +114,10 @@ def world_asset(world_name: str):
         Path(ASSET_BASE_PATH) / "world" / "idle",
     ])
 
+
 def best_visual(stage: str, pose: str, lair: str, weather: str, visual_event: str = "None", world_name: str = ""):
     return event_asset(visual_event) or dragon_asset(stage, pose) or world_asset(world_name) or lair_asset(lair, weather)
+
 
 def attach_visual(embed: discord.Embed, stage: str, pose: str, lair: str, weather: str, visual_event: str = "None", world_name: str = ""):
     path = best_visual(stage, pose, lair, weather, visual_event, world_name)
@@ -119,6 +126,7 @@ def attach_visual(embed: discord.Embed, stage: str, pose: str, lair: str, weathe
     file = discord.File(str(path), filename=path.name)
     embed.set_image(url=f"attachment://{path.name}")
     return embed, file
+
 
 def art_status(stage: str, pose: str, lair: str, weather: str, accessory: str, visual_event: str = "None", world_name: str = ""):
     return {
@@ -131,7 +139,8 @@ def art_status(stage: str, pose: str, lair: str, weather: str, accessory: str, v
         "weather": weather,
     }
 
+
 def needed_images_for_stage(stage: str):
     folder = STAGE_FOLDER.get(stage, "egg")
     poses = ["idle", "eating", "playing", "training", "clean", "sleeping", "bonding", "celebrating", "sad", "adventuring"]
-    return [f"assets/dragons/{folder}/{pose}.png" for pose in poses]
+    return [f"assets/dragons/{folder}/{folder}_{pose}.png" for pose in poses]

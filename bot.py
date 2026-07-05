@@ -2,7 +2,7 @@ import asyncio
 import discord
 from discord.ext import commands, tasks
 
-from config import TOKEN
+from config import TOKEN, BOT_OWNER_ID
 from database import init_db, get_dragon
 from dragon import decay_dragon
 from events import random_event_embed, create_event_record
@@ -12,7 +12,7 @@ from views.dragon_view import DragonView
 from views.event_view import EventView
 from views.updater import update_dragon_message
 
-VERSION = "3.0 Foundation"
+VERSION = "3.1 Adventure Buttons + Owner Commands"
 
 EXTENSIONS = [
     "cogs.setup",
@@ -25,6 +25,26 @@ EXTENSIONS = [
 intents = discord.Intents.default()
 intents.members = True
 
+
+async def owner_only_interaction_check(interaction: discord.Interaction) -> bool:
+    """Allow only BOT_OWNER_ID to run slash commands.
+
+    Buttons/select menus remain usable for everyone because they are not
+    app command interactions.
+    """
+    if interaction.command is None:
+        return True
+
+    if BOT_OWNER_ID and interaction.user.id == BOT_OWNER_ID:
+        return True
+
+    await interaction.response.send_message(
+        "⛔ Only Nathasja can use slash commands.",
+        ephemeral=True,
+    )
+    return False
+
+
 class GuildDragonBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix="!", intents=intents)
@@ -35,6 +55,8 @@ class GuildDragonBot(commands.Bot):
         self.add_view(DragonView())
         self.add_view(EventView())
         self.add_view(DailyGiftView())
+
+        self.tree.interaction_check = owner_only_interaction_check
 
         for extension in EXTENSIONS:
             try:
@@ -61,17 +83,16 @@ class GuildDragonBot(commands.Bot):
 
         if not dragon_decay.is_running():
             dragon_decay.start()
-
         if not random_events.is_running():
             random_events.start()
-
         if not living_dragon.is_running():
             living_dragon.start()
-
         if not daily_gift_task.is_running():
             daily_gift_task.start()
 
+
 bot = GuildDragonBot()
+
 
 @tasks.loop(minutes=30)
 async def dragon_decay():
@@ -82,22 +103,22 @@ async def dragon_decay():
         except Exception as exc:
             print(f"dragon_decay failed in {guild.name}: {exc}")
 
+
 @tasks.loop(minutes=20)
 async def random_events():
     for guild in bot.guilds:
         try:
             import random
+
             if random.random() > 0.10:
                 continue
 
             d = get_dragon(guild.id)
             channel_id = d["event_channel_id"] or d["channel_id"]
-
             if not channel_id:
                 continue
 
             channel = guild.get_channel(channel_id)
-
             if not channel:
                 continue
 
@@ -105,9 +126,9 @@ async def random_events():
             msg = await channel.send(embed=embed, view=EventView())
             create_event_record(guild.id, event_type, msg.id)
             await update_dragon_message(guild)
-
         except Exception as exc:
             print(f"random_events failed in {guild.name}: {exc}")
+
 
 @tasks.loop(minutes=15)
 async def living_dragon():
@@ -117,18 +138,16 @@ async def living_dragon():
             await update_dragon_message(guild)
 
             should_send, care_message = should_request_care(guild.id)
-
             if should_send:
                 d = get_dragon(guild.id)
                 channel_id = d["channel_id"]
                 channel = guild.get_channel(channel_id) if channel_id else None
-
                 if channel:
                     await channel.send(care_message, delete_after=1800)
                     mark_care_request_sent(guild.id)
-
         except Exception as exc:
             print(f"living_dragon failed in {guild.name}: {exc}")
+
 
 @tasks.loop(hours=3)
 async def daily_gift_task():
@@ -139,22 +158,20 @@ async def daily_gift_task():
 
             d = get_dragon(guild.id)
             channel_id = d["channel_id"]
-
             if not channel_id:
                 continue
 
             channel = guild.get_channel(channel_id)
-
             if not channel:
                 continue
 
             await channel.send(
                 "🎁 **Daily Guild Gift**\nThe dragon found treasure for the guild!",
-                view=DailyGiftView()
+                view=DailyGiftView(),
             )
-
         except Exception as exc:
             print(f"daily_gift_task failed in {guild.name}: {exc}")
+
 
 if not TOKEN:
     raise RuntimeError("Missing DISCORD_TOKEN or TOKEN in .env file")
