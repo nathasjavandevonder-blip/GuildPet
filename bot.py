@@ -2,7 +2,7 @@ import asyncio
 import discord
 from discord.ext import commands, tasks
 
-from config import TOKEN, BOT_OWNER_ID
+from config import TOKEN, BOT_OWNER_ID, BOT_OWNER_ID
 from database import init_db, get_dragon
 from dragon import decay_dragon
 from events import random_event_embed, create_event_record
