@@ -162,7 +162,7 @@ class DragonView(discord.ui.View):
         rows = get_achievement_progress(interaction.guild.id, interaction.user.id)
 
         if not rows:
-            await interaction.response.send_message("🏆 No achievement progress yet.", ephemeral=True, delete_after=30, delete_after=30)
+            await interaction.response.send_message("🏆 No achievement progress yet.", ephemeral=True, delete_after=30)
             return
 
         lines = []
@@ -178,7 +178,6 @@ class DragonView(discord.ui.View):
         await interaction.response.send_message(
             "🏆 **Your Dragon Achievements**\n\n" + "\n\n".join(lines),
             ephemeral=True, delete_after=30,
-            delete_after=30,
         )
 
     @discord.ui.button(label="Memories", emoji="📖", style=discord.ButtonStyle.secondary, custom_id="dragon_memories")
