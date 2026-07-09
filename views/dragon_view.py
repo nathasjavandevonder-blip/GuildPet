@@ -140,23 +140,6 @@ class DragonView(discord.ui.View):
             ephemeral=True, delete_after=30,
         )
 
-    @discord.ui.button(label="Profile", emoji="🎖️", style=discord.ButtonStyle.secondary, custom_id="dragon_profile_button")
-    async def profile(self, interaction, button):
-        await interaction.response.send_message(
-            embed=make_profile_embed(interaction.guild, interaction.user),
-            ephemeral=True, delete_after=30,
-        )
-
-    @discord.ui.button(label="Talk", emoji="💬", style=discord.ButtonStyle.secondary, custom_id="dragon_v5_talk")
-    async def v5_talk(self, interaction, button):
-        text, mood, personality, personal_bond = talk_response(interaction.guild.id, interaction.user)
-        record_contribution(interaction.guild.id, interaction.user, "talk", 1)
-        await interaction.response.send_message(
-            f"💬 **The dragon speaks**\n\n{text}\n\n**Mood:** {mood}\n**Personality:** {personality}\n**Your bond:** {personal_bond}",
-            ephemeral=True, delete_after=30,
-        )
-
-
     @discord.ui.button(label="Achievements", emoji="🏆", style=discord.ButtonStyle.secondary, custom_id="dragon_achievements")
     async def achievements(self, interaction, button):
         rows = get_achievement_progress(interaction.guild.id, interaction.user.id)
