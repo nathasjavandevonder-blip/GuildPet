@@ -8,6 +8,8 @@ from adventures import make_adventure_embed
 from views.shop_view import ShopView
 from views.research_view import ResearchView
 from views.adventure_view import AdventureView
+from database import get_dragon
+from v5_systems import talk_response, record_contribution, handle_sleep_interaction
 from views.inventory_view import InventoryView
 from views.quest_view import QuestView
 from views.lair_view import LairView
@@ -142,6 +144,15 @@ class DragonView(discord.ui.View):
     async def profile(self, interaction, button):
         await interaction.response.send_message(
             embed=make_profile_embed(interaction.guild, interaction.user),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="Talk", emoji="💬", style=discord.ButtonStyle.secondary, custom_id="dragon_v5_talk")
+    async def v5_talk(self, interaction, button):
+        text, mood, personality, personal_bond = talk_response(interaction.guild.id, interaction.user)
+        record_contribution(interaction.guild.id, interaction.user, "talk", 1)
+        await interaction.response.send_message(
+            f"💬 **The dragon speaks**\n\n{text}\n\n**Mood:** {mood}\n**Personality:** {personality}\n**Your bond:** {personal_bond}",
             ephemeral=True,
         )
 

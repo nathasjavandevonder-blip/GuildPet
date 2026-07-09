@@ -412,3 +412,81 @@ def create_world_event(guild_id):
 
     add_memory(guild_id, f"{name}: {text}", memory_type="World Event", importance=2)
     return name, text, reward
+
+
+def handle_sleep_interaction(guild_id, user, action):
+    """
+    Sleeping dragon interaction.
+    action: whisper, cuddle, wake_gently, let_sleep
+    """
+    import random
+    from database import connect, get_dragon
+
+    d = get_dragon(guild_id)
+    if not d["sleeping"]:
+        return False, "The dragon is already awake."
+
+    messages = {
+        "whisper": [
+            "🤫 You whisper softly. The dragon smiles in its sleep.",
+            "🤫 The dragon hears your voice and relaxes deeper into the nest.",
+        ],
+        "cuddle": [
+            "💖 You carefully sit beside the dragon. It feels safe.",
+            "💖 The dragon curls closer without waking up.",
+        ],
+        "let_sleep": [
+            "😴 You let the dragon sleep peacefully.",
+            "🌙 The lair stays quiet. The dragon keeps dreaming.",
+        ],
+    }
+
+    con = connect()
+    cur = con.cursor()
+
+    if action == "wake_gently":
+        if random.random() < 0.80:
+            msg = "☕ You gently wake the dragon. It slowly opens its eyes and gives a sleepy smile."
+            cur.execute(
+                "UPDATE dragon SET sleeping=0, pose='waking', mood='Sleepy', energy=MIN(energy+5,100), bond=MIN(bond+2,100), dragon_message=?, last_action_text=? WHERE guild_id=?",
+                ("Yawwwn... good morning, keeper.", f"**{user.display_name}** gently woke the dragon.", guild_id),
+            )
+            con.commit()
+            con.close()
+            record_contribution(guild_id, user, "wake_gently", 2)
+            add_memory(guild_id, f"{user.display_name} gently woke me from my sleep.", user=user, memory_type="Sleep", importance=1)
+            return True, msg
+        else:
+            msg = "😴 The dragon mumbles: *Five more minutes...*"
+            cur.execute(
+                "UPDATE dragon SET mood='Sleepy', dragon_message=?, last_action_text=? WHERE guild_id=?",
+                ("Five more minutes...", f"**{user.display_name}** tried to wake the dragon gently, but it kept sleeping.", guild_id),
+            )
+            con.commit()
+            con.close()
+            record_contribution(guild_id, user, "wake_attempt", 1)
+            return True, msg
+
+    if action == "whisper":
+        cur.execute(
+            "UPDATE dragon SET bond=MIN(bond+1,100), happiness=MIN(happiness+1,100), mood='Sleepy', dragon_message=?, last_action_text=? WHERE guild_id=?",
+            ("I heard a kind voice in my dreams...", f"**{user.display_name}** whispered to the sleeping dragon.", guild_id),
+        )
+        reward = 1
+    elif action == "cuddle":
+        cur.execute(
+            "UPDATE dragon SET bond=MIN(bond+2,100), happiness=MIN(happiness+2,100), mood='Sleepy', dragon_message=?, last_action_text=? WHERE guild_id=?",
+            ("I feel safe...", f"**{user.display_name}** kept the sleeping dragon company.", guild_id),
+        )
+        reward = 2
+    else:
+        cur.execute(
+            "UPDATE dragon SET energy=MIN(energy+3,100), mood='Sleepy', dragon_message=?, last_action_text=? WHERE guild_id=?",
+            ("Zzz... peaceful dreams...", f"**{user.display_name}** let the dragon sleep peacefully.", guild_id),
+        )
+        reward = 1
+
+    con.commit()
+    con.close()
+    record_contribution(guild_id, user, action, reward)
+    return True, random.choice(messages.get(action, messages["let_sleep"]))
