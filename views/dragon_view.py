@@ -1,7 +1,7 @@
 import discord
 
 from dragon import check_cooldown, apply_action
-from achievements import check_achievements, ACHIEVEMENTS
+from achievements import check_achievements, ACHIEVEMENTS, get_achievement_progress
 from embeds import make_dragon_embed, make_shop_embed, make_profile_embed, make_research_embed, make_inventory_embed, make_quests_embed, make_lair_embed
 from memories import get_memories
 from adventures import make_adventure_embed
@@ -24,7 +24,7 @@ class DragonView(discord.ui.View):
         if not ok:
             await interaction.response.send_message(
                 f"⏳ You can use **{action}** again in **{mins} minutes**.",
-                ephemeral=True,
+                ephemeral=True, delete_after=30,
             )
             return
 
@@ -41,7 +41,7 @@ class DragonView(discord.ui.View):
             lines = [f"{ACHIEVEMENTS[key][0]} — {ACHIEVEMENTS[key][1]}" for key in unlocked]
             await interaction.followup.send(
                 "🏆 **Achievement unlocked!**\n" + "\n".join(lines),
-                ephemeral=True,
+                ephemeral=True, delete_after=30,
             )
 
     @discord.ui.button(label="Feed", emoji="🍖", style=discord.ButtonStyle.danger, custom_id="dragon_feed")
@@ -73,7 +73,7 @@ class DragonView(discord.ui.View):
         await interaction.response.send_message(
             embed=make_shop_embed(interaction.guild.id),
             view=ShopView(),
-            ephemeral=True,
+            ephemeral=True, delete_after=30,
         )
 
     @discord.ui.button(label="Research", emoji="📚", style=discord.ButtonStyle.primary, custom_id="dragon_research_button")
@@ -81,7 +81,7 @@ class DragonView(discord.ui.View):
         await interaction.response.send_message(
             embed=make_research_embed(interaction.guild.id),
             view=ResearchView(),
-            ephemeral=True,
+            ephemeral=True, delete_after=30,
         )
 
     @discord.ui.button(label="Adventure", emoji="🗺️", style=discord.ButtonStyle.primary, custom_id="dragon_adventure_button")
@@ -89,21 +89,21 @@ class DragonView(discord.ui.View):
         await interaction.response.send_message(
             embed=make_adventure_embed(interaction.guild.id),
             view=AdventureView(),
-            ephemeral=True,
+            ephemeral=True, delete_after=30,
         )
 
 
     @discord.ui.button(label="Inventory", emoji="🎒", style=discord.ButtonStyle.success, custom_id="dragon_inventory_button")
     async def inventory(self, interaction, button):
-        await interaction.response.send_message(embed=make_inventory_embed(interaction.guild.id), view=InventoryView(), ephemeral=True)
+        await interaction.response.send_message(embed=make_inventory_embed(interaction.guild.id), view=InventoryView(), ephemeral=True, delete_after=30)
 
     @discord.ui.button(label="Quests", emoji="📜", style=discord.ButtonStyle.success, custom_id="dragon_quests_button")
     async def quests(self, interaction, button):
-        await interaction.response.send_message(embed=make_quests_embed(interaction.guild.id), view=QuestView(), ephemeral=True)
+        await interaction.response.send_message(embed=make_quests_embed(interaction.guild.id), view=QuestView(), ephemeral=True, delete_after=30)
 
     @discord.ui.button(label="Lair", emoji="🏡", style=discord.ButtonStyle.secondary, custom_id="dragon_lair_button")
     async def lair(self, interaction, button):
-        await interaction.response.send_message(embed=make_lair_embed(interaction.guild.id), view=LairView(), ephemeral=True)
+        await interaction.response.send_message(embed=make_lair_embed(interaction.guild.id), view=LairView(), ephemeral=True, delete_after=30)
 
     @discord.ui.button(label="Leaderboard", emoji="🏆", style=discord.ButtonStyle.primary, custom_id="dragon_leaderboard")
     async def leaderboard(self, interaction, button):
@@ -119,7 +119,7 @@ class DragonView(discord.ui.View):
         con.close()
 
         if not rows:
-            await interaction.response.send_message("No leaderboard yet.", ephemeral=True)
+            await interaction.response.send_message("No leaderboard yet.", ephemeral=True, delete_after=30)
             return
 
         lines = []
@@ -137,14 +137,14 @@ class DragonView(discord.ui.View):
 
         await interaction.response.send_message(
             "🏆 **Top Dragon Keepers**\n\n" + "\n\n".join(lines),
-            ephemeral=True,
+            ephemeral=True, delete_after=30,
         )
 
     @discord.ui.button(label="Profile", emoji="🎖️", style=discord.ButtonStyle.secondary, custom_id="dragon_profile_button")
     async def profile(self, interaction, button):
         await interaction.response.send_message(
             embed=make_profile_embed(interaction.guild, interaction.user),
-            ephemeral=True,
+            ephemeral=True, delete_after=30,
         )
 
     @discord.ui.button(label="Talk", emoji="💬", style=discord.ButtonStyle.secondary, custom_id="dragon_v5_talk")
@@ -153,18 +153,43 @@ class DragonView(discord.ui.View):
         record_contribution(interaction.guild.id, interaction.user, "talk", 1)
         await interaction.response.send_message(
             f"💬 **The dragon speaks**\n\n{text}\n\n**Mood:** {mood}\n**Personality:** {personality}\n**Your bond:** {personal_bond}",
-            ephemeral=True,
+            ephemeral=True, delete_after=30,
+        )
+
+
+    @discord.ui.button(label="Achievements", emoji="🏆", style=discord.ButtonStyle.secondary, custom_id="dragon_achievements")
+    async def achievements(self, interaction, button):
+        rows = get_achievement_progress(interaction.guild.id, interaction.user.id)
+
+        if not rows:
+            await interaction.response.send_message("🏆 No achievement progress yet.", ephemeral=True, delete_after=30, delete_after=30)
+            return
+
+        lines = []
+        for a in rows:
+            if a["done"]:
+                lines.append(f"✅ **{a['name']}** — complete")
+            else:
+                lines.append(
+                    f"⬜ **{a['name']}** — {a['current']}/{a['target']} "
+                    f"(**{a['remaining']} left**)\n_{a['desc']}_"
+                )
+
+        await interaction.response.send_message(
+            "🏆 **Your Dragon Achievements**\n\n" + "\n\n".join(lines),
+            ephemeral=True, delete_after=30,
+            delete_after=30,
         )
 
     @discord.ui.button(label="Memories", emoji="📖", style=discord.ButtonStyle.secondary, custom_id="dragon_memories")
     async def memories(self, interaction, button):
         rows = get_memories(interaction.guild.id)
         if not rows:
-            await interaction.response.send_message("📖 No dragon memories yet.", ephemeral=True)
+            await interaction.response.send_message("📖 No dragon memories yet.", ephemeral=True, delete_after=30)
             return
 
         lines = [f"• {text}" for text, _ in rows]
         await interaction.response.send_message(
             "📖 **Dragon Memories**\n\n" + "\n".join(lines),
-            ephemeral=True,
+            ephemeral=True, delete_after=30,
         )
