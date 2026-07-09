@@ -367,7 +367,7 @@ def apply_action(guild_id: int, user, action: str):
         UPDATE dragon
         SET hunger=?, happiness=?, energy=?, cleanliness=?, bond=?, xp=?,
             guild_tokens=?, lifetime_guild_tokens=?, pose=?, visual_event=?,
-            sleeping=0, last_action_text=?, dragon_message=?
+            sleeping=?, last_action_text=?, dragon_message=?
         WHERE guild_id=?
         """,
         (
@@ -381,6 +381,7 @@ def apply_action(guild_id: int, user, action: str):
             lifetime_guild_tokens,
             e["pose"],
             "None",
+            e.get("sleeping", 0),
             text,
             dragon_message,
             guild_id,
