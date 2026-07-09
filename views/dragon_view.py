@@ -33,9 +33,9 @@ class DragonView(discord.ui.View):
         embed, file = make_dragon_embed(interaction.guild.id)
 
         if file:
-            await interaction.response.edit_message(embed=embed, attachments=[file], view=DragonView())
+            await interaction.response.edit_message(embed=embed, attachments=[file], view=__import__('views.state_view', fromlist=['get_state_view']).get_state_view(interaction.guild.id))
         else:
-            await interaction.response.edit_message(embed=embed, attachments=[], view=DragonView())
+            await interaction.response.edit_message(embed=embed, attachments=[], view=__import__('views.state_view', fromlist=['get_state_view']).get_state_view(interaction.guild.id))
 
         if unlocked:
             lines = [f"{ACHIEVEMENTS[key][0]} — {ACHIEVEMENTS[key][1]}" for key in unlocked]

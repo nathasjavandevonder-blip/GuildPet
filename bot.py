@@ -8,7 +8,7 @@ from dragon import decay_dragon
 from events import random_event_embed, create_event_record
 from living import living_update, should_request_care, mark_care_request_sent
 from daily_gift import DailyGiftView, daily_gift_available
-from views.dragon_view import DragonView
+from views.state_view import get_state_view
 from views.event_view import EventView
 from views.updater import update_dragon_message
 
