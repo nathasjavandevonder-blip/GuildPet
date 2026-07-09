@@ -314,6 +314,7 @@ def apply_action(guild_id: int, user, action: str):
             "guild_tokens": 2,
             "points": 4,
             "pose": "sleeping",
+            "sleeping": 1,
             "text": "let the dragon rest 😴",
         },
         "bond": {
