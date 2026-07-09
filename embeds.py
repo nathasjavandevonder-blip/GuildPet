@@ -8,7 +8,7 @@ from art_engine import attach_visual, art_status, needed_images_for_stage
 from world import current_world, world_progress_bar, unlocked_world_text
 from progression import RESEARCH, has_research, level_needed
 from traits import trait_description
-from rpg import get_inventory, get_quests, get_equipment, RARITY_EMOJI
+from rpg import get_inventory, get_quests, get_equipment, RARITY_EMOJI, compute_dragon_stats, get_lair_upgrades, LAIR_UPGRADES, claim_completed_quests
 from visual_theme import (
     compact_care_line,
     xp_bar,
@@ -356,4 +356,65 @@ def make_lair_embed(guild_id: int):
     embed = discord.Embed(title="🏡 Dragon Lair & RPG Overview", description=(f"**Lair:** `{d['lair']}`\n**Trait:** `{d['dragon_trait']}`\n**Accessory:** `{d['accessory']}`\n**Mood:** `{d['mood']}`\n\nFuture lair upgrades: Forge, Garden, Library and Training Grounds."), color=0x9B59B6)
     embed.add_field(name="🛡️ Equipment", value=eq_text, inline=False)
     embed.add_field(name="📊 Derived RPG Stats", value=(f"❤️ Health: **{min(100, 70 + d['bond'] // 4)}**\n💪 Strength: **{5 + d['xp'] // 55000}**\n🛡 Defense: **{5 + d['cleanliness'] // 10}**\n⚡ Agility: **{5 + d['energy'] // 10}**\n🧠 Intelligence: **{5 + d['research_points'] // 25}**\n🍀 Luck: **{5 + d['happiness'] // 10}**"), inline=False)
+    return embed
+
+
+# ---- GuildPet v4.3 extended RPG pages ----
+def make_inventory_embed(guild_id: int):
+    rows = get_inventory(guild_id)
+    if not rows:
+        desc = "The guild inventory is empty. Send the dragon on adventures to find loot."
+    else:
+        groups = {}
+        for row in rows:
+            groups.setdefault(row["item_type"], []).append(row)
+        parts = []
+        for item_type in ["Equipment", "Food", "Material", "Relic", "Treasure"]:
+            if item_type not in groups:
+                continue
+            lines = []
+            for row in groups[item_type][:12]:
+                icon = RARITY_EMOJI.get(row["rarity"], "⚪")
+                lines.append(f"{icon} **{row['item_name']}** ×{row['quantity']} — `{row['rarity']}`")
+            parts.append(f"__**{item_type}**__\n" + "\n".join(lines))
+        desc = "\n\n".join(parts)
+    embed = discord.Embed(title="🎒 Guild Dragon Inventory", description=desc, color=0x2ECC71)
+    embed.set_footer(text="Use Auto Equip to equip the best available gear.")
+    return embed
+
+def make_quests_embed(guild_id: int):
+    rows = get_quests(guild_id)
+    lines = []
+    ready = 0
+    for row in rows:
+        done = row["progress"] >= row["target"]
+        if done and not row["claimed"]:
+            ready += 1
+        icon = "✅" if done else "📜"
+        claimed = " • claimed" if row["claimed"] else (" • ready" if done else "")
+        lines.append(f"{icon} **{row['title']}**{claimed}\n{row['description']}\nProgress: `{row['progress']} / {row['target']}` • Reward: {row['reward_text']}")
+    embed = discord.Embed(title="📜 Dragon Quests", description="\n\n".join(lines) if lines else "No quests yet.", color=0xF1C40F)
+    embed.set_footer(text=f"{ready} quest reward(s) ready to claim." if ready else "Complete adventures, care and combat to progress quests.")
+    return embed
+
+def make_lair_embed(guild_id: int):
+    d = get_dragon(guild_id)
+    equipment = get_equipment(guild_id)
+    eq_text = "No equipment yet. Find equipment in adventures, then use Auto Equip."
+    if equipment:
+        eq_text = "\n".join([f"**{r['slot']}**: {r['item_name']} (`{r['rarity']}`) — {r['bonus_text']}" for r in equipment])
+    levels = get_lair_upgrades(guild_id)
+    upgrade_lines = []
+    for key, data in LAIR_UPGRADES.items():
+        lvl = levels.get(key, 0)
+        upgrade_lines.append(f"{data['emoji']} **{data['name']}** Lv `{lvl}/{data['max']}` — {data['bonus']}")
+    stats = compute_dragon_stats(guild_id)
+    embed = discord.Embed(
+        title="🏡 Dragon Lair & RPG Overview",
+        description=f"**Lair:** `{d['lair']}`\n**Trait:** `{d['dragon_trait']}`\n**Mood:** `{d['mood']}`\n**Tokens:** `{d['guild_tokens']}`",
+        color=0x9B59B6,
+    )
+    embed.add_field(name="🏗️ Lair Upgrades", value="\n".join(upgrade_lines), inline=False)
+    embed.add_field(name="🛡️ Equipment", value=eq_text, inline=False)
+    embed.add_field(name="📊 Combat Stats", value=(f"❤️ Health: **{stats['health']}**\n💪 Strength: **{stats['strength']}**\n🛡 Defense: **{stats['defense']}**\n⚡ Agility: **{stats['agility']}**\n🧠 Intelligence: **{stats['intelligence']}**\n🍀 Luck: **{stats['luck']}**"), inline=False)
     return embed

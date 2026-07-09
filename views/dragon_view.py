@@ -8,6 +8,9 @@ from adventures import make_adventure_embed
 from views.shop_view import ShopView
 from views.research_view import ResearchView
 from views.adventure_view import AdventureView
+from views.inventory_view import InventoryView
+from views.quest_view import QuestView
+from views.lair_view import LairView
 
 
 class DragonView(discord.ui.View):
@@ -90,15 +93,15 @@ class DragonView(discord.ui.View):
 
     @discord.ui.button(label="Inventory", emoji="🎒", style=discord.ButtonStyle.success, custom_id="dragon_inventory_button")
     async def inventory(self, interaction, button):
-        await interaction.response.send_message(embed=make_inventory_embed(interaction.guild.id), ephemeral=True)
+        await interaction.response.send_message(embed=make_inventory_embed(interaction.guild.id), view=InventoryView(), ephemeral=True)
 
     @discord.ui.button(label="Quests", emoji="📜", style=discord.ButtonStyle.success, custom_id="dragon_quests_button")
     async def quests(self, interaction, button):
-        await interaction.response.send_message(embed=make_quests_embed(interaction.guild.id), ephemeral=True)
+        await interaction.response.send_message(embed=make_quests_embed(interaction.guild.id), view=QuestView(), ephemeral=True)
 
     @discord.ui.button(label="Lair", emoji="🏡", style=discord.ButtonStyle.secondary, custom_id="dragon_lair_button")
     async def lair(self, interaction, button):
-        await interaction.response.send_message(embed=make_lair_embed(interaction.guild.id), ephemeral=True)
+        await interaction.response.send_message(embed=make_lair_embed(interaction.guild.id), view=LairView(), ephemeral=True)
 
     @discord.ui.button(label="Leaderboard", emoji="🏆", style=discord.ButtonStyle.primary, custom_id="dragon_leaderboard")
     async def leaderboard(self, interaction, button):
