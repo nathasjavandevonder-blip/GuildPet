@@ -19,7 +19,7 @@ EXTENSIONS = [
     "cogs.admin",
     "cogs.progression",
     "cogs.profile",
-    "cogs.adventures",
+    "cogs.adventures", "cogs.v5",
 ]
 
 intents = discord.Intents.default()

@@ -8,6 +8,7 @@ from utils import clamp, get_stage, utc_today
 from progression import research_bonus, add_guild_level_xp
 from living import affection_event_text
 from rpg import progress_quest, set_quest_progress
+from v5_systems import record_contribution, add_memory as add_v5_memory
 
 DRAGON_MESSAGES = {
     "feed": [
@@ -388,6 +389,12 @@ def apply_action(guild_id: int, user, action: str):
     con.close()
 
     streak, new_day = add_player_reward(guild_id, user.id, e["tokens"], e["points"], action)
+    try:
+        record_contribution(guild_id, user, action, 2)
+        if action in ["feed", "play", "train", "clean", "bond"] and random.random() < 0.08:
+            add_v5_memory(guild_id, f"{user.display_name} {e['text'].strip()} and helped shape my personality.", user=user, memory_type="Care", importance=1)
+    except Exception as exc:
+        print(f"v5 contribution tracking failed: {exc}")
     if new_day and streak > 1:
         add_memory(guild_id, f"{user.display_name} reached a {streak} day keeper streak.")
 
