@@ -3,3 +3,13 @@ guild_dragon.db
 __pycache__/
 *.pyc
 backups/
+
+# GuildPet v5 local development
+venv/
+.env
+guild_dragon_v5_test.db
+*.db-wal
+*.db-shm
+__pycache__/
+*.pyc
+archive/legacy/
