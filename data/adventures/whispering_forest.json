@@ -1,0 +1,130 @@
+{
+  "key": "whispering_forest",
+  "name": "Whispering Forest",
+  "emoji": "🌲",
+  "description": "A mysterious forest filled with old paths and hidden treasures.",
+  "start_node": "forest_entrance",
+  "nodes": {
+    "forest_entrance": {
+      "text": "The dragon arrives at a fork in the forest path.",
+      "choices": [
+        {
+          "key": "follow_lights",
+          "label": "Follow the lights",
+          "emoji": "✨",
+          "next_node": "fairy_glade",
+          "xp": 8,
+          "tokens": 5
+        },
+        {
+          "key": "dark_path",
+          "label": "Take the dark path",
+          "emoji": "🌑",
+          "next_node": "ancient_tree",
+          "xp": 10,
+          "tokens": 4
+        },
+        {
+          "key": "river_path",
+          "label": "Follow the river",
+          "emoji": "🌊",
+          "next_node": "river_crossing",
+          "xp": 6,
+          "tokens": 7
+        }
+      ]
+    },
+    "fairy_glade": {
+      "text": "Tiny lights surround the dragon inside a peaceful glade.",
+      "choices": [
+        {
+          "key": "accept_blessing",
+          "label": "Accept the blessing",
+          "emoji": "🧚",
+          "next_node": "forest_return",
+          "xp": 18,
+          "tokens": 12,
+          "loot": ["fairy_dust"]
+        },
+        {
+          "key": "search_glade",
+          "label": "Search the glade",
+          "emoji": "🔎",
+          "next_node": "hidden_chest",
+          "xp": 12,
+          "tokens": 9
+        }
+      ]
+    },
+    "ancient_tree": {
+      "text": "An ancient tree opens its eyes and asks the dragon a riddle.",
+      "choices": [
+        {
+          "key": "answer_riddle",
+          "label": "Answer the riddle",
+          "emoji": "📜",
+          "next_node": "hidden_chest",
+          "xp": 22,
+          "tokens": 14
+        },
+        {
+          "key": "show_respect",
+          "label": "Bow respectfully",
+          "emoji": "🐉",
+          "next_node": "forest_return",
+          "xp": 15,
+          "tokens": 10,
+          "loot": ["ancient_leaf"]
+        }
+      ]
+    },
+    "river_crossing": {
+      "text": "The bridge is broken, but something shines beneath the water.",
+      "choices": [
+        {
+          "key": "dive",
+          "label": "Dive for it",
+          "emoji": "💧",
+          "next_node": "hidden_chest",
+          "xp": 16,
+          "tokens": 11,
+          "loot": ["river_crystal"]
+        },
+        {
+          "key": "repair_bridge",
+          "label": "Repair the bridge",
+          "emoji": "🪵",
+          "next_node": "forest_return",
+          "xp": 20,
+          "tokens": 8
+        }
+      ]
+    },
+    "hidden_chest": {
+      "text": "The dragon discovers a chest covered in glowing vines.",
+      "choices": [
+        {
+          "key": "open_chest",
+          "label": "Open the chest",
+          "emoji": "🗝️",
+          "next_node": "forest_return",
+          "xp": 25,
+          "tokens": 25,
+          "loot": ["forest_relic", "dragon_snack"]
+        },
+        {
+          "key": "leave_chest",
+          "label": "Leave it untouched",
+          "emoji": "🌿",
+          "next_node": "forest_return",
+          "xp": 12,
+          "tokens": 6
+        }
+      ]
+    },
+    "forest_return": {
+      "text": "The dragon finds the road home and returns safely to the guild.",
+      "complete": true
+    }
+  }
+}

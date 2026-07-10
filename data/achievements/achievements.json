@@ -98,5 +98,35 @@
     "metric": "bond_actions",
     "target": 250,
     "hidden": false
+  },
+  {
+    "key": "first_adventure",
+    "name": "First Expedition",
+    "description": "Complete your first interactive adventure.",
+    "category": "adventure",
+    "rarity": "common",
+    "metric": "adventures_completed",
+    "target": 1,
+    "hidden": false
+  },
+  {
+    "key": "explorer_10",
+    "name": "Guild Explorer",
+    "description": "Complete 10 interactive adventures.",
+    "category": "adventure",
+    "rarity": "rare",
+    "metric": "adventures_completed",
+    "target": 10,
+    "hidden": false
+  },
+  {
+    "key": "master_explorer_100",
+    "name": "Master Explorer",
+    "description": "Complete 100 interactive adventures.",
+    "category": "adventure",
+    "rarity": "legendary",
+    "metric": "adventures_completed",
+    "target": 100,
+    "hidden": false
   }
 ]

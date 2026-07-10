@@ -1,0 +1,108 @@
+{
+  "key": "crystal_cave",
+  "name": "Crystal Cave",
+  "emoji": "💎",
+  "description": "A glittering cave where every choice echoes through the tunnels.",
+  "start_node": "cave_entrance",
+  "nodes": {
+    "cave_entrance": {
+      "text": "Three tunnels stretch into the crystal mountain.",
+      "choices": [
+        {
+          "key": "blue_tunnel",
+          "label": "Blue tunnel",
+          "emoji": "🔵",
+          "next_node": "crystal_lake",
+          "xp": 8,
+          "tokens": 7
+        },
+        {
+          "key": "red_tunnel",
+          "label": "Red tunnel",
+          "emoji": "🔴",
+          "next_node": "warm_chamber",
+          "xp": 10,
+          "tokens": 6
+        },
+        {
+          "key": "gold_tunnel",
+          "label": "Golden tunnel",
+          "emoji": "🟡",
+          "next_node": "treasure_echo",
+          "xp": 7,
+          "tokens": 12
+        }
+      ]
+    },
+    "crystal_lake": {
+      "text": "A silent underground lake reflects thousands of crystals.",
+      "choices": [
+        {
+          "key": "collect_crystal",
+          "label": "Collect a crystal",
+          "emoji": "💎",
+          "next_node": "cave_exit",
+          "xp": 20,
+          "tokens": 15,
+          "loot": ["blue_crystal"]
+        },
+        {
+          "key": "drink_water",
+          "label": "Drink the water",
+          "emoji": "🥤",
+          "next_node": "cave_exit",
+          "xp": 15,
+          "tokens": 10
+        }
+      ]
+    },
+    "warm_chamber": {
+      "text": "Warm air rises from cracks in the stone.",
+      "choices": [
+        {
+          "key": "inspect_cracks",
+          "label": "Inspect the cracks",
+          "emoji": "🔥",
+          "next_node": "cave_exit",
+          "xp": 24,
+          "tokens": 13,
+          "loot": ["ember_stone"]
+        },
+        {
+          "key": "rest",
+          "label": "Rest nearby",
+          "emoji": "😴",
+          "next_node": "cave_exit",
+          "xp": 12,
+          "tokens": 8
+        }
+      ]
+    },
+    "treasure_echo": {
+      "text": "The dragon hears coins moving somewhere in the darkness.",
+      "choices": [
+        {
+          "key": "follow_echo",
+          "label": "Follow the echo",
+          "emoji": "🪙",
+          "next_node": "cave_exit",
+          "xp": 18,
+          "tokens": 30,
+          "loot": ["golden_scale"]
+        },
+        {
+          "key": "return_safely",
+          "label": "Return safely",
+          "emoji": "↩️",
+          "next_node": "cave_exit",
+          "xp": 10,
+          "tokens": 10
+        }
+      ]
+    },
+    "cave_exit": {
+      "text": "The dragon follows fresh air and returns to the guild.",
+      "complete": true
+    }
+  }
+}
