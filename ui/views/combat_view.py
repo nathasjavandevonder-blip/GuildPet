@@ -4,10 +4,15 @@ import asyncio
 
 import discord
 
-from ui.panel_manager import move_main_panel_to_bottom
+from ui.panel_manager import (
+    move_main_panel_to_bottom,
+    refresh_main_panel_in_place,
+)
 
 from systems.combat.catalog import get_enemy
 from systems.combat.models import CombatResult
+from systems.items.catalog import format_item
+from systems.living.service import finish_combat_recovery
 from systems.combat.service import (
     CombatFinished,
     CombatNotFound,
@@ -34,14 +39,33 @@ async def delete_message_later(
         pass
 
 
+
+async def finish_recovery_later(
+    guild: discord.Guild,
+    seconds: int = 60,
+) -> None:
+    await asyncio.sleep(seconds)
+
+    finish_combat_recovery(guild.id)
+
+    try:
+        await refresh_main_panel_in_place(guild)
+    except (
+        discord.NotFound,
+        discord.Forbidden,
+        discord.HTTPException,
+    ):
+        pass
+
+
 def health_bar(current: int, maximum: int, size: int = 10) -> str:
     if maximum <= 0:
-        return "░" * size
+        return "⬛" * size
 
     filled = round((current / maximum) * size)
     filled = max(0, min(size, filled))
 
-    return "█" * filled + "░" * (size - filled)
+    return "🟩" * filled + "⬛" * (size - filled)
 
 
 def _battle_log(combat_id: int) -> str:
@@ -87,7 +111,7 @@ def build_combat_embed(
     embed.add_field(
         name="🐉 Dragon HP",
         value=(
-            f"`{health_bar(combat['dragon_hp'], combat['dragon_max_hp'])}`\n"
+            f"{health_bar(combat['dragon_hp'], combat['dragon_max_hp'])}\n"
             f"**{combat['dragon_hp']} / {combat['dragon_max_hp']}**"
         ),
         inline=True,
@@ -96,7 +120,7 @@ def build_combat_embed(
     embed.add_field(
         name=f"{enemy.emoji} Enemy HP",
         value=(
-            f"`{health_bar(combat['enemy_hp'], combat['enemy_max_hp'])}`\n"
+            f"{health_bar(combat['enemy_hp'], combat['enemy_max_hp'])}\n"
             f"**{combat['enemy_hp']} / {combat['enemy_max_hp']}**"
         ),
         inline=True,
@@ -137,7 +161,7 @@ def build_finished_combat_embed(
     embed.add_field(
         name="🐉 Dragon HP",
         value=(
-            f"`{health_bar(result.dragon_hp, result.dragon_max_hp)}`\n"
+            f"{health_bar(result.dragon_hp, result.dragon_max_hp)}\n"
             f"**{result.dragon_hp} / {result.dragon_max_hp}**"
         ),
         inline=True,
@@ -146,7 +170,7 @@ def build_finished_combat_embed(
     embed.add_field(
         name=f"{result.enemy_emoji} Enemy HP",
         value=(
-            f"`{health_bar(result.enemy_hp, result.enemy_max_hp)}`\n"
+            f"{health_bar(result.enemy_hp, result.enemy_max_hp)}\n"
             f"**{result.enemy_hp} / {result.enemy_max_hp}**"
         ),
         inline=True,
@@ -168,7 +192,10 @@ def build_reward_embed(
     result: CombatResult,
 ) -> discord.Embed:
     loot_text = (
-        "\n".join(f"• `{item}`" for item in result.loot)
+        "\n".join(
+            f"• {format_item(item)}"
+            for item in result.loot
+        )
         if result.loot
         else "No item drops this time."
     )
@@ -296,6 +323,14 @@ class CombatStateView(discord.ui.View):
             interaction.guild,
             interaction.channel,
         )
+
+        if result.status == "victory":
+            asyncio.create_task(
+                finish_recovery_later(
+                    interaction.guild,
+                    60,
+                )
+            )
 
     @discord.ui.button(
         label="Attack",

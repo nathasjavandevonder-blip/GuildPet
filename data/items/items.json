@@ -1,0 +1,79 @@
+[
+  {
+    "key": "goblin_tooth",
+    "name": "Goblin Tooth",
+    "emoji": "🦷",
+    "rarity": "common",
+    "description": "A small tooth collected after defeating a goblin."
+  },
+  {
+    "key": "training_badge",
+    "name": "Training Badge",
+    "emoji": "🎖️",
+    "rarity": "rare",
+    "description": "Proof that the dragon completed combat training."
+  },
+  {
+    "key": "small_healing_herb",
+    "name": "Small Healing Herb",
+    "emoji": "🌿",
+    "rarity": "common",
+    "description": "A useful herb with mild restorative properties."
+  },
+  {
+    "key": "fairy_dust",
+    "name": "Fairy Dust",
+    "emoji": "✨",
+    "rarity": "rare",
+    "description": "Glittering dust found in an enchanted glade."
+  },
+  {
+    "key": "ancient_leaf",
+    "name": "Ancient Leaf",
+    "emoji": "🍂",
+    "rarity": "rare",
+    "description": "A leaf from a tree older than the guild."
+  },
+  {
+    "key": "river_crystal",
+    "name": "River Crystal",
+    "emoji": "💠",
+    "rarity": "rare",
+    "description": "A crystal polished by underground water."
+  },
+  {
+    "key": "forest_relic",
+    "name": "Forest Relic",
+    "emoji": "🗿",
+    "rarity": "epic",
+    "description": "A mysterious relic covered in glowing vines."
+  },
+  {
+    "key": "dragon_snack",
+    "name": "Dragon Snack",
+    "emoji": "🍖",
+    "rarity": "common",
+    "description": "A tasty snack saved for later."
+  },
+  {
+    "key": "blue_crystal",
+    "name": "Blue Crystal",
+    "emoji": "🔷",
+    "rarity": "rare",
+    "description": "A crystal found beside an underground lake."
+  },
+  {
+    "key": "ember_stone",
+    "name": "Ember Stone",
+    "emoji": "🔥",
+    "rarity": "epic",
+    "description": "A warm stone carrying a faint inner flame."
+  },
+  {
+    "key": "golden_scale",
+    "name": "Golden Scale",
+    "emoji": "🌟",
+    "rarity": "legendary",
+    "description": "A beautiful golden scale found deep underground."
+  }
+]

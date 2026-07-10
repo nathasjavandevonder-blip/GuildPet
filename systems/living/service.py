@@ -405,3 +405,81 @@ def apply_passive_decay(
         )
 
     return get_living_state(guild_id)
+
+
+
+def apply_combat_aftermath(guild_id: int) -> LivingState:
+    """Apply fatigue and excitement immediately after combat."""
+    current = ensure_living_state(guild_id)
+
+    hunger = clamp(current.hunger - 4)
+    happiness = clamp(current.happiness + 4)
+    energy = clamp(current.energy - 12)
+    cleanliness = clamp(current.cleanliness - 3)
+
+    mood = calculate_mood(
+        hunger=hunger,
+        happiness=happiness,
+        energy=energy,
+        cleanliness=cleanliness,
+        bond=current.bond,
+    )
+
+    with db_session() as connection:
+        connection.execute(
+            """
+            UPDATE dragon_living_v5
+            SET hunger = ?,
+                happiness = ?,
+                energy = ?,
+                cleanliness = ?,
+                mood = ?,
+                current_activity = 'catching its breath',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE guild_id = ?
+            """,
+            (
+                hunger,
+                happiness,
+                energy,
+                cleanliness,
+                mood.value,
+                guild_id,
+            ),
+        )
+
+    return get_living_state(guild_id)
+
+
+def finish_combat_recovery(guild_id: int) -> LivingState:
+    """Return the dragon to its normal post-combat activity."""
+    current = ensure_living_state(guild_id)
+
+    energy = clamp(current.energy + 5)
+
+    mood = calculate_mood(
+        hunger=current.hunger,
+        happiness=current.happiness,
+        energy=energy,
+        cleanliness=current.cleanliness,
+        bond=current.bond,
+    )
+
+    with db_session() as connection:
+        connection.execute(
+            """
+            UPDATE dragon_living_v5
+            SET energy = ?,
+                mood = ?,
+                current_activity = 'watching the guild',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE guild_id = ?
+            """,
+            (
+                energy,
+                mood.value,
+                guild_id,
+            ),
+        )
+
+    return get_living_state(guild_id)

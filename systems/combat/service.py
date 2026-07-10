@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import random
+from datetime import timedelta
 
 from core.database import db_session
 from systems.achievements.service import add_progress
@@ -9,6 +10,7 @@ from systems.chronicle.service import add_chronicle_entry
 from systems.combat.catalog import get_enemy
 from systems.combat.models import CombatResult
 from systems.relationships.service import record_relationship_action
+from systems.living.service import apply_combat_aftermath
 from systems.state.models import DragonState
 from systems.state.service import reset_to_idle, set_state
 
@@ -489,9 +491,17 @@ def perform_action(
         xp_reward = enemy.xp_reward
         token_reward = enemy.token_reward
 
-        reset_to_idle(
+        apply_combat_aftermath(guild_id)
+
+        set_state(
             guild_id,
-            reason="combat_victory",
+            DragonState.RECOVERING,
+            duration=timedelta(seconds=60),
+            payload={
+                "reason": "combat_victory",
+                "combat_id": int(combat["id"]),
+            },
+            force=True,
         )
 
     else:
