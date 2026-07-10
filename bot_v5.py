@@ -17,6 +17,12 @@ from systems.living.service import get_living_state
 from systems.state.models import DragonState
 from systems.state.service import ensure_state, get_state
 from ui.view_manager import build_view
+from ui.main_panel import build_main_embed
+from ui.panel_manager import (
+    move_main_panel_to_bottom,
+    refresh_main_panel_in_place,
+    restore_registered_panels,
+)
 from ui.views.achievement_view import (
     AchievementHallView,
     build_achievement_embed,
@@ -31,61 +37,6 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 
 if not TOKEN:
     raise RuntimeError("DISCORD_TOKEN is missing from .env.v5")
-
-
-def build_main_embed(guild_id: int) -> discord.Embed:
-    living = get_living_state(guild_id)
-    state = ensure_state(guild_id)
-
-    state_names = {
-        DragonState.IDLE: "Relaxing",
-        DragonState.SLEEPING: "Sleeping",
-        DragonState.ADVENTURE: "On Adventure",
-        DragonState.COMBAT: "In Combat",
-        DragonState.RECOVERING: "Recovering",
-        DragonState.CELEBRATING: "Celebrating",
-    }
-
-    embed = discord.Embed(
-        title="🐉 GuildPet v5 Alpha",
-        description=(
-            f"**Current state:** {state_names[state.state]}\n"
-            f"**Activity:** {living.current_activity.title()}\n"
-            f"**Mood:** {living.mood.value.title()}"
-        ),
-        color=discord.Color.blurple(),
-    )
-
-    embed.add_field(
-        name="🍖 Hunger",
-        value=f"**{living.hunger}/100**",
-        inline=True,
-    )
-    embed.add_field(
-        name="😊 Happiness",
-        value=f"**{living.happiness}/100**",
-        inline=True,
-    )
-    embed.add_field(
-        name="⚡ Energy",
-        value=f"**{living.energy}/100**",
-        inline=True,
-    )
-    embed.add_field(
-        name="🛁 Cleanliness",
-        value=f"**{living.cleanliness}/100**",
-        inline=True,
-    )
-    embed.add_field(
-        name="❤️ Guild Bond",
-        value=f"**{living.bond}/100**",
-        inline=True,
-    )
-
-    embed.set_footer(
-        text="GuildPet v5 test environment — data is separate from live"
-    )
-    return embed
 
 
 class AdventureSelect(discord.ui.Select):
@@ -146,6 +97,7 @@ class V5TestBot(commands.Bot):
         if applied:
             print("Applied migrations:", ", ".join(applied))
 
+        await restore_registered_panels(self)
         await self.tree.sync()
         print(f"Synced {len(self.tree.get_commands())} application commands.")
 
@@ -161,37 +113,52 @@ async def on_ready() -> None:
 
 @bot.tree.command(
     name="v5panel",
-    description="Post the GuildPet v5 alpha test panel.",
+    description="Post or move the GuildPet v5 panel to the bottom.",
 )
 @app_commands.checks.has_permissions(manage_guild=True)
 async def v5panel(interaction: discord.Interaction) -> None:
     ensure_state(interaction.guild_id)
 
-    await interaction.response.send_message(
-        embed=build_main_embed(interaction.guild_id),
-        view=build_view(interaction.guild_id),
+    await interaction.response.defer(
+        ephemeral=True,
+    )
+
+    await move_main_panel_to_bottom(
+        interaction.guild,
+        interaction.channel,
+    )
+
+    await interaction.followup.send(
+        "🐉 The GuildPet panel was moved to the bottom.",
+        ephemeral=True,
     )
 
 
 @bot.tree.command(
     name="v5refresh",
-    description="Refresh the current GuildPet v5 state panel.",
+    description="Refresh the current GuildPet v5 main panel.",
 )
 async def v5refresh(interaction: discord.Interaction) -> None:
-    state = get_state(interaction.guild_id)
-
-    if state.state == DragonState.ADVENTURE:
-        embed = build_adventure_embed(interaction.guild_id)
-    elif state.state == DragonState.COMBAT:
-        embed = build_combat_embed(interaction.guild_id)
-    else:
-        embed = build_main_embed(interaction.guild_id)
-
-    await interaction.response.send_message(
-        embed=embed,
-        view=build_view(interaction.guild_id),
+    await interaction.response.defer(
         ephemeral=True,
-        delete_after=30,
+    )
+
+    message = await refresh_main_panel_in_place(
+        interaction.guild,
+    )
+
+    if message is None:
+        await move_main_panel_to_bottom(
+            interaction.guild,
+            interaction.channel,
+        )
+        response = "🐉 A new GuildPet panel was created."
+    else:
+        response = "🐉 The GuildPet panel was refreshed."
+
+    await interaction.followup.send(
+        response,
+        ephemeral=True,
     )
 
 

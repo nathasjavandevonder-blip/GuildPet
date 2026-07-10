@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import asyncio
+
 import discord
+
+from ui.panel_manager import move_main_panel_to_bottom
 
 from systems.combat.catalog import get_enemy
 from systems.combat.models import CombatResult
@@ -12,6 +16,22 @@ from systems.combat.service import (
     get_recent_actions,
     perform_action,
 )
+
+
+
+async def delete_message_later(
+    message: discord.Message,
+    seconds: int,
+) -> None:
+    try:
+        await asyncio.sleep(seconds)
+        await message.delete()
+    except (
+        discord.NotFound,
+        discord.Forbidden,
+        discord.HTTPException,
+    ):
+        pass
 
 
 def health_bar(current: int, maximum: int, size: int = 10) -> str:
@@ -254,6 +274,21 @@ class CombatStateView(discord.ui.View):
                 embed=build_reward_embed(result),
                 delete_after=300,
             )
+
+        # Keep the finished combat visible for 10 minutes.
+        asyncio.create_task(
+            delete_message_later(
+                interaction.message,
+                600,
+            )
+        )
+
+        # The permanent GuildPet panel is recreated last,
+        # so it remains the bottom-most visible message.
+        await move_main_panel_to_bottom(
+            interaction.guild,
+            interaction.channel,
+        )
 
     @discord.ui.button(
         label="Attack",
