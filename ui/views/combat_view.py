@@ -270,9 +270,16 @@ class CombatStateView(discord.ui.View):
         )
 
         if result.status == "victory":
-            await interaction.followup.send(
+            reward_message = await interaction.followup.send(
                 embed=build_reward_embed(result),
-                delete_after=300,
+                wait=True,
+                )
+
+            asyncio.create_task(
+                delete_message_later(
+                reward_message,
+                300,
+                )
             )
 
         # Keep the finished combat visible for 10 minutes.
