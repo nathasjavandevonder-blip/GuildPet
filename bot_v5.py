@@ -4,7 +4,7 @@ import os
 
 import discord
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
 from core.config import BASE_DIR
@@ -16,6 +16,7 @@ from systems.combat.service import start_combat
 from systems.living.service import get_living_state
 from systems.state.models import DragonState
 from systems.state.service import ensure_state, get_state
+from systems.world.service import world_tick
 from ui.view_manager import build_view
 from ui.main_panel import build_main_embed
 from ui.panel_manager import (
@@ -98,12 +99,33 @@ class V5TestBot(commands.Bot):
             print("Applied migrations:", ", ".join(applied))
 
         await restore_registered_panels(self)
+
+        if not world_clock_task.is_running():
+            world_clock_task.start()
+
         await self.tree.sync()
         print(f"Synced {len(self.tree.get_commands())} application commands.")
 
 
 intents = discord.Intents.default()
 bot = V5TestBot(command_prefix="!", intents=intents)
+
+
+@tasks.loop(minutes=30)
+async def world_clock_task() -> None:
+    for guild in bot.guilds:
+        try:
+            world_tick(guild.id)
+            await refresh_main_panel_in_place(guild)
+        except Exception as exc:
+            print(
+                f"World tick failed for {guild.name}: {exc}"
+            )
+
+
+@world_clock_task.before_loop
+async def before_world_clock_task() -> None:
+    await bot.wait_until_ready()
 
 
 @bot.event

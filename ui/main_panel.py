@@ -5,6 +5,8 @@ import discord
 from systems.living.service import get_living_state
 from systems.state.models import DragonState
 from systems.state.service import resolve_expired_state
+from systems.world.catalog import get_location, get_weather
+from systems.world.service import ensure_world_state
 
 
 STATE_NAMES = {
@@ -20,6 +22,9 @@ STATE_NAMES = {
 def build_main_embed(guild_id: int) -> discord.Embed:
     living = get_living_state(guild_id)
     state = resolve_expired_state(guild_id)
+    world = ensure_world_state(guild_id)
+    location = get_location(world.location_key)
+    weather = get_weather(world.weather_key)
 
     embed = discord.Embed(
         title="🐉 GuildPet v5 Alpha",
@@ -29,6 +34,17 @@ def build_main_embed(guild_id: int) -> discord.Embed:
             f"**Mood:** {living.mood.value.title()}"
         ),
         color=discord.Color.blurple(),
+    )
+
+    embed.add_field(
+        name="🌍 World",
+        value=(
+            f"{location.emoji} **{location.name}**\n"
+            f"{weather.emoji} {weather.name}\n"
+            f"🕒 {world.time_period.title()}\n"
+            f"🍂 {world.season_key.title()}"
+        ),
+        inline=False,
     )
 
     embed.add_field(

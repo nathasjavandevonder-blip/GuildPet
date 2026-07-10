@@ -1,0 +1,56 @@
+[
+  {
+    "key": "guild_hall",
+    "name": "Guild Hall",
+    "emoji": "🏰",
+    "description": "The safe home of the guild dragon.",
+    "danger": 0,
+    "available_times": ["morning", "afternoon", "evening", "night"],
+    "weather": ["clear", "cloudy", "rain", "storm", "fog", "snow"]
+  },
+  {
+    "key": "whispering_forest",
+    "name": "Whispering Forest",
+    "emoji": "🌲",
+    "description": "An ancient forest filled with hidden paths.",
+    "danger": 2,
+    "available_times": ["morning", "afternoon", "evening", "night"],
+    "weather": ["clear", "cloudy", "rain", "storm", "fog", "snow"]
+  },
+  {
+    "key": "crystal_caverns",
+    "name": "Crystal Caverns",
+    "emoji": "💎",
+    "description": "Glittering tunnels beneath the mountains.",
+    "danger": 3,
+    "available_times": ["morning", "afternoon", "evening", "night"],
+    "weather": ["clear"]
+  },
+  {
+    "key": "mountain_pass",
+    "name": "Mountain Pass",
+    "emoji": "⛰️",
+    "description": "A steep route leading into dangerous heights.",
+    "danger": 4,
+    "available_times": ["morning", "afternoon", "evening"],
+    "weather": ["clear", "cloudy", "rain", "storm", "fog", "snow"]
+  },
+  {
+    "key": "ancient_ruins",
+    "name": "Ancient Ruins",
+    "emoji": "🏛️",
+    "description": "Forgotten stones hiding old secrets.",
+    "danger": 4,
+    "available_times": ["morning", "afternoon", "evening", "night"],
+    "weather": ["clear", "cloudy", "rain", "fog"]
+  },
+  {
+    "key": "frozen_peaks",
+    "name": "Frozen Peaks",
+    "emoji": "❄️",
+    "description": "A cold and unforgiving mountain region.",
+    "danger": 5,
+    "available_times": ["morning", "afternoon"],
+    "weather": ["cloudy", "storm", "fog", "snow"]
+  }
+]

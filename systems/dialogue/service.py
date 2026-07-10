@@ -4,6 +4,7 @@ import random
 
 from systems.living.personality import dominant_personality
 from systems.living.service import get_living_state
+from systems.world.dialogue import world_dialogue
 from systems.relationships.service import (
     get_relationship,
     relationship_title,
@@ -128,5 +129,10 @@ def dragon_talk(
             lines.append(
                 f"I am starting to know you well, {username}."
             )
+
+    lines.extend([
+        "",
+        world_dialogue(guild_id),
+    ])
 
     return "\n".join(lines)

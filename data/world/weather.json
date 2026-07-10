@@ -1,0 +1,44 @@
+[
+  {
+    "key": "clear",
+    "name": "Clear",
+    "emoji": "☀️",
+    "mood_modifier": 2,
+    "adventure_modifier": 1.0
+  },
+  {
+    "key": "cloudy",
+    "name": "Cloudy",
+    "emoji": "☁️",
+    "mood_modifier": 0,
+    "adventure_modifier": 1.0
+  },
+  {
+    "key": "rain",
+    "name": "Rain",
+    "emoji": "🌧️",
+    "mood_modifier": -1,
+    "adventure_modifier": 0.95
+  },
+  {
+    "key": "storm",
+    "name": "Storm",
+    "emoji": "⛈️",
+    "mood_modifier": -3,
+    "adventure_modifier": 0.8
+  },
+  {
+    "key": "fog",
+    "name": "Fog",
+    "emoji": "🌫️",
+    "mood_modifier": -1,
+    "adventure_modifier": 0.9
+  },
+  {
+    "key": "snow",
+    "name": "Snow",
+    "emoji": "❄️",
+    "mood_modifier": 1,
+    "adventure_modifier": 0.85
+  }
+]
