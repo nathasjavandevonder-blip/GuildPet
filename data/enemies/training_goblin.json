@@ -8,5 +8,25 @@
   "armor": 1,
   "fire_weakness": 1.35,
   "xp_reward": 20,
-  "token_reward": 30
+  "token_reward": 30,
+  "loot_table": [
+    {
+      "item_key": "goblin_tooth",
+      "chance": 0.65,
+      "min_quantity": 1,
+      "max_quantity": 1
+    },
+    {
+      "item_key": "training_badge",
+      "chance": 0.20,
+      "min_quantity": 1,
+      "max_quantity": 1
+    },
+    {
+      "item_key": "small_healing_herb",
+      "chance": 0.35,
+      "min_quantity": 1,
+      "max_quantity": 2
+    }
+  ]
 }

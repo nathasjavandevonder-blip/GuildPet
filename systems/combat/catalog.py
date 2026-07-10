@@ -28,6 +28,7 @@ def load_enemies() -> dict[str, EnemyDefinition]:
             fire_weakness=float(raw.get("fire_weakness", 1.0)),
             xp_reward=int(raw.get("xp_reward", 0)),
             token_reward=int(raw.get("token_reward", 0)),
+            loot_table=tuple(raw.get("loot_table", [])),
         )
         enemies[enemy.key] = enemy
 
