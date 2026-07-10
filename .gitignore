@@ -13,3 +13,4 @@ guild_dragon_v5_test.db
 __pycache__/
 *.pyc
 archive/legacy/
+.env.v5
