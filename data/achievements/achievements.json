@@ -1,0 +1,102 @@
+[
+  {
+    "key": "first_meal",
+    "name": "First Meal",
+    "description": "Feed the dragon once.",
+    "category": "care",
+    "rarity": "common",
+    "metric": "feeds",
+    "target": 1,
+    "hidden": false
+  },
+  {
+    "key": "dragon_chef_25",
+    "name": "Dragon Chef",
+    "description": "Feed the dragon 25 times.",
+    "category": "care",
+    "rarity": "rare",
+    "metric": "feeds",
+    "target": 25,
+    "hidden": false
+  },
+  {
+    "key": "playmate_25",
+    "name": "Playmate",
+    "description": "Play with the dragon 25 times.",
+    "category": "care",
+    "rarity": "rare",
+    "metric": "plays",
+    "target": 25,
+    "hidden": false
+  },
+  {
+    "key": "dragon_trainer_25",
+    "name": "Dragon Trainer",
+    "description": "Train the dragon 25 times.",
+    "category": "training",
+    "rarity": "rare",
+    "metric": "trains",
+    "target": 25,
+    "hidden": false
+  },
+  {
+    "key": "trusted_keeper_100",
+    "name": "Trusted Keeper",
+    "description": "Reach 100 total care actions.",
+    "category": "care",
+    "rarity": "epic",
+    "metric": "care_actions",
+    "target": 100,
+    "hidden": false
+  },
+  {
+    "key": "first_victory",
+    "name": "First Victory",
+    "description": "Win your first combat encounter.",
+    "category": "combat",
+    "rarity": "common",
+    "metric": "combat_wins",
+    "target": 1,
+    "hidden": false
+  },
+  {
+    "key": "monster_hunter_25",
+    "name": "Monster Hunter",
+    "description": "Win 25 combat encounters.",
+    "category": "combat",
+    "rarity": "epic",
+    "metric": "combat_wins",
+    "target": 25,
+    "hidden": false
+  },
+  {
+    "key": "last_scale",
+    "name": "Last Scale Standing",
+    "description": "Win a fight with 5 HP or less remaining.",
+    "category": "combat",
+    "rarity": "legendary",
+    "metric": "low_hp_victories",
+    "target": 1,
+    "hidden": true
+  },
+  {
+    "key": "gentle_wakeup_10",
+    "name": "Gentle Morning",
+    "description": "Wake the dragon gently 10 times.",
+    "category": "living",
+    "rarity": "rare",
+    "metric": "gentle_wakeups",
+    "target": 10,
+    "hidden": false
+  },
+  {
+    "key": "dragon_whisperer",
+    "name": "Dragon Whisperer",
+    "description": "Reach 250 bond interactions.",
+    "category": "bond",
+    "rarity": "mythic",
+    "metric": "bond_actions",
+    "target": 250,
+    "hidden": false
+  }
+]
