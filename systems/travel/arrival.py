@@ -11,6 +11,12 @@ from systems.travel.ambient import (
 from systems.travel.encounter import roll_encounter
 
 
+
+
+SAFE_LOCATIONS = {
+    "guild_hall",
+}
+
 AMBIENT_TABLES = {
     "forest": FOREST_AMBIENT,
     "river": RIVER_AMBIENT,
@@ -25,8 +31,14 @@ def handle_arrival(location_key: str) -> dict[str, str]:
         ["🐉 The dragon arrived safely."],
     )
 
+    encounter = (
+        "nothing"
+        if location_key in SAFE_LOCATIONS
+        else roll_encounter()
+    )
+
     return {
         "location_key": location_key,
         "story": choice(ambient_lines),
-        "encounter": roll_encounter(),
+        "encounter": encounter,
     }
