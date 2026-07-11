@@ -4,6 +4,8 @@ from datetime import UTC, datetime, timedelta
 
 from core.database import db_session
 from systems.travel.catalog import LOCATIONS
+from systems.state.models import DragonState
+from systems.state.service import reset_to_idle, set_state
 
 
 def get_location(guild_id: int):
@@ -97,6 +99,18 @@ def start_travel(
             ),
         )
 
+    set_state(
+        guild_id,
+        DragonState.TRAVELLING,
+        duration=timedelta(minutes=minutes),
+        payload={
+            "from_location": current,
+            "destination": destination,
+            "arrival_time": arrival.isoformat(),
+        },
+        force=True,
+    )
+
     return True
 
 
@@ -146,5 +160,10 @@ def finish_travel(guild_id: int):
             """,
             (guild_id,),
         )
+
+    reset_to_idle(
+        guild_id,
+        reason="travel_finished",
+    )
 
     return True

@@ -13,6 +13,7 @@ ALLOWED_TRANSITIONS: dict[DragonState, set[DragonState]] = {
         DragonState.SLEEPING,
         DragonState.ADVENTURE,
         DragonState.COMBAT,
+        DragonState.TRAVELLING,
         DragonState.CELEBRATING,
     },
     DragonState.SLEEPING: {
@@ -29,6 +30,11 @@ ALLOWED_TRANSITIONS: dict[DragonState, set[DragonState]] = {
         DragonState.IDLE,
         DragonState.RECOVERING,
         DragonState.CELEBRATING,
+    },
+    DragonState.TRAVELLING: {
+        DragonState.IDLE,
+        DragonState.COMBAT,
+        DragonState.RECOVERING,
     },
     DragonState.RECOVERING: {
         DragonState.IDLE,

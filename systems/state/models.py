@@ -11,6 +11,7 @@ class DragonState(StrEnum):
     SLEEPING = "sleeping"
     ADVENTURE = "adventure"
     COMBAT = "combat"
+    TRAVELLING = "travelling"
     RECOVERING = "recovering"
     CELEBRATING = "celebrating"
 

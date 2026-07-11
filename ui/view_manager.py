@@ -24,6 +24,11 @@ def build_view(guild_id: int) -> discord.ui.View:
 
         return CombatStateView(guild_id)
 
+    if state_record.state == DragonState.TRAVELLING:
+        from ui.views.travel_view import TravelStateView
+
+        return TravelStateView(guild_id)
+
     if state_record.state == DragonState.RECOVERING:
         from ui.views.recovering_view import RecoveringView
 

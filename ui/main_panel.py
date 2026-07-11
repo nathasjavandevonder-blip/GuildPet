@@ -14,6 +14,7 @@ STATE_NAMES = {
     DragonState.SLEEPING: "Sleeping",
     DragonState.ADVENTURE: "On Adventure",
     DragonState.COMBAT: "In Combat",
+    DragonState.TRAVELLING: "Travelling",
     DragonState.RECOVERING: "Recovering",
     DragonState.CELEBRATING: "Celebrating",
 }

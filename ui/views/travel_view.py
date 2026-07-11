@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 import discord
 
 from systems.travel.catalog import LOCATIONS
+from ui.panel_manager import refresh_main_panel_in_place
 from systems.travel.service import (
     finish_travel,
     get_location,
@@ -133,6 +134,10 @@ class TravelSelect(discord.ui.Select):
             view=TravelView(interaction.guild_id),
         )
 
+        await refresh_main_panel_in_place(
+            interaction.guild,
+        )
+
 
 class TravelView(discord.ui.View):
     def __init__(self, guild_id: int):
@@ -154,4 +159,39 @@ class TravelView(discord.ui.View):
         await interaction.response.edit_message(
             embed=build_travel_embed(interaction.guild_id),
             view=TravelView(interaction.guild_id),
+        )
+
+
+
+class TravelStateView(discord.ui.View):
+    def __init__(self, guild_id: int):
+        super().__init__(timeout=None)
+        self.guild_id = guild_id
+
+    @discord.ui.button(
+        label="Refresh Travel",
+        emoji="🔄",
+        style=discord.ButtonStyle.primary,
+        custom_id="v5_travel_state_refresh",
+    )
+    async def refresh_travel(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        arrived = finish_travel(interaction.guild_id)
+
+        if arrived:
+            from ui.view_manager import build_view
+            from ui.main_panel import build_main_embed
+
+            await interaction.response.edit_message(
+                embed=build_main_embed(interaction.guild_id),
+                view=build_view(interaction.guild_id),
+            )
+            return
+
+        await interaction.response.send_message(
+            embed=build_travel_embed(interaction.guild_id),
+            ephemeral=True,
         )

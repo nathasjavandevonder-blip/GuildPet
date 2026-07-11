@@ -114,6 +114,24 @@ class IdleView(discord.ui.View):
         )
 
     @discord.ui.button(
+        label="Travel",
+        emoji="🗺️",
+        style=discord.ButtonStyle.primary,
+        custom_id="v5_idle_travel",
+    )
+    async def travel(self, interaction, button):
+        from ui.views.travel_view import (
+            TravelView,
+            build_travel_embed,
+        )
+
+        await interaction.response.send_message(
+            embed=build_travel_embed(interaction.guild_id),
+            view=TravelView(interaction.guild_id),
+            ephemeral=True,
+        )
+
+    @discord.ui.button(
         label="Rest",
         emoji="😴",
         style=discord.ButtonStyle.secondary,
