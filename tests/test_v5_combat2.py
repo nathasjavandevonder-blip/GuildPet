@@ -51,7 +51,7 @@ def main() -> None:
     result = None
 
     for round_number in range(1, 15):
-        result = perform_action(
+        result = await perform_action(
             guild_id,
             user_id=user_id,
             username="Combat Tester",

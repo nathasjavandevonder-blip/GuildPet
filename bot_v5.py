@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 
 from core.config import BASE_DIR
 from migrations.manager import run_migrations
+from systems.events import register_event_handlers
 from systems.adventures.catalog import load_adventures
 from systems.adventures.service import start_adventure
 from systems.chronicle.service import get_chronicle
@@ -93,6 +94,7 @@ class AdventureStartView(discord.ui.View):
 
 class V5TestBot(commands.Bot):
     async def setup_hook(self) -> None:
+        register_event_handlers()
         applied = run_migrations()
 
         if applied:

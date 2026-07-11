@@ -49,7 +49,7 @@ def main() -> None:
     rounds = 0
 
     while get_active_combat(guild_id) is not None:
-        result = perform_action(
+        result = await perform_action(
             guild_id,
             user_id=user_id,
             username="Test Keeper",

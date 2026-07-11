@@ -5,6 +5,7 @@ import random
 from datetime import timedelta
 
 from core.database import db_session
+from core.events.bus import event_bus
 from systems.achievements.service import add_progress
 from systems.chronicle.service import add_chronicle_entry
 from systems.combat.catalog import get_enemy
@@ -337,7 +338,7 @@ def _award_victory(
     return loot, list(dict.fromkeys(unlocked))
 
 
-def perform_action(
+async def perform_action(
     guild_id: int,
     *,
     user_id: int,
@@ -492,6 +493,24 @@ def perform_action(
         token_reward = enemy.token_reward
 
         apply_combat_aftermath(guild_id)
+
+        await event_bus.emit(
+            "combat.won",
+            guild_id=guild_id,
+            actor_user_id=user_id,
+            actor_username=username,
+            payload={
+                "combat_id": int(combat["id"]),
+                "enemy_key": enemy.key,
+                "enemy_name": enemy.name,
+                "xp": xp_reward,
+                "tokens": token_reward,
+                "loot": loot,
+                "achievements": unlocked,
+                "dragon_hp": dragon_hp,
+            },
+            source="systems.combat.service",
+        )
 
         set_state(
             guild_id,

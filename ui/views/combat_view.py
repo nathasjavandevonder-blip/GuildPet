@@ -260,7 +260,7 @@ class CombatStateView(discord.ui.View):
         action_key: str,
     ) -> None:
         try:
-            result = perform_action(
+            result = await perform_action(
                 interaction.guild_id,
                 user_id=interaction.user.id,
                 username=interaction.user.display_name,
