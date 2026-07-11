@@ -75,5 +75,33 @@
     "emoji": "🌟",
     "rarity": "legendary",
     "description": "A beautiful golden scale found deep underground."
+  },
+  {
+    "key": "forest_herb",
+    "name": "Forest Herb",
+    "emoji": "🌿",
+    "rarity": "common",
+    "description": "A fragrant herb gathered in the forest."
+  },
+  {
+    "key": "forest_mushroom",
+    "name": "Forest Mushroom",
+    "emoji": "🍄",
+    "rarity": "common",
+    "description": "A fresh mushroom found beneath the trees."
+  },
+  {
+    "key": "fallen_branch",
+    "name": "Fallen Branch",
+    "emoji": "🪵",
+    "rarity": "common",
+    "description": "Useful wood collected from the forest floor."
+  },
+  {
+    "key": "forest_berries",
+    "name": "Forest Berries",
+    "emoji": "🫐",
+    "rarity": "uncommon",
+    "description": "Sweet berries growing deep inside the forest."
   }
 ]
