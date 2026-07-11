@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+import asyncio
+import contextlib
+
 import discord
 
 from systems.travel.catalog import LOCATIONS
@@ -30,6 +33,39 @@ ENCOUNTER_TEXT = {
     "treasure": "Something valuable may be hidden nearby.",
     "rare": "The air feels strange and unusually powerful.",
 }
+
+
+
+def _remaining_seconds(arrival_time: str | None) -> int:
+    if not arrival_time:
+        return 0
+
+    arrival = datetime.fromisoformat(arrival_time)
+
+    if arrival.tzinfo is None:
+        arrival = arrival.replace(tzinfo=UTC)
+
+    return max(
+        0,
+        int((arrival - datetime.now(UTC)).total_seconds()),
+    )
+
+
+def _schedule_original_delete(
+    interaction: discord.Interaction,
+    seconds: int,
+) -> None:
+    async def delete_later() -> None:
+        await asyncio.sleep(max(1, seconds))
+
+        with contextlib.suppress(
+            discord.NotFound,
+            discord.Forbidden,
+            discord.HTTPException,
+        ):
+            await interaction.delete_original_response()
+
+    asyncio.create_task(delete_later())
 
 
 def _remaining_text(arrival_time: str | None) -> str:
@@ -187,6 +223,12 @@ class TravelSelect(discord.ui.Select):
             interaction.guild,
         )
 
+        travel_state = get_location(interaction.guild_id)
+        _schedule_original_delete(
+            interaction,
+            _remaining_seconds(travel_state["arrival_time"]) + 300,
+        )
+
 
 class TravelView(discord.ui.View):
     def __init__(self, guild_id: int):
@@ -217,6 +259,11 @@ class TravelView(discord.ui.View):
 
             await refresh_main_panel_in_place(
                 interaction.guild,
+            )
+
+            _schedule_original_delete(
+                interaction,
+                300,
             )
             return
 
@@ -251,16 +298,24 @@ class TravelStateView(discord.ui.View):
                 embed=embed,
                 view=view,
                 ephemeral=True,
-                delete_after=300,
             )
 
             await refresh_main_panel_in_place(
                 interaction.guild,
+            )
+
+            _schedule_original_delete(
+                interaction,
+                300,
             )
             return
 
         await interaction.response.send_message(
             embed=build_travel_embed(interaction.guild_id),
             ephemeral=True,
-            delete_after=60,
+        )
+
+        _schedule_original_delete(
+            interaction,
+            60,
         )
