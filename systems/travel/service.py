@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 
 from core.database import db_session
 from systems.travel.catalog import LOCATIONS
+from systems.travel.arrival import handle_arrival
 from systems.state.models import DragonState
 from systems.state.service import reset_to_idle, set_state
 
@@ -130,6 +131,11 @@ def finish_travel(guild_id: int):
         if arrival > datetime.now(UTC):
             return False
 
+    destination_key = location["destination_key"]
+
+    if not destination_key:
+        return False
+
     with db_session() as con:
 
         con.execute(
@@ -166,4 +172,4 @@ def finish_travel(guild_id: int):
         reason="travel_finished",
     )
 
-    return True
+    return handle_arrival(destination_key)
