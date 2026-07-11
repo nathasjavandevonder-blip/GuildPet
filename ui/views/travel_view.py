@@ -4,15 +4,13 @@ from datetime import UTC, datetime
 
 import discord
 
-from systems.chronicle.service import add_chronicle_entry
-from systems.gathering.service import GatherResult, roll_resource
-from systems.items.service import add_item
 from systems.travel.catalog import LOCATIONS
 from systems.travel.service import (
     finish_travel,
     get_location,
     start_travel,
 )
+from ui.encounters import EncounterContext, build_encounter
 from ui.panel_manager import refresh_main_panel_in_place
 
 
@@ -100,7 +98,12 @@ def prepare_arrival(
     arrival: dict[str, str],
 ) -> tuple[discord.Embed, discord.ui.View | None]:
     location_key = arrival["location_key"]
-    encounter = arrival.get("encounter", "nothing")
+    encounter_key = arrival.get("encounter", "nothing")
+    story = arrival.get(
+        "story",
+        "The dragon arrived safely.",
+    )
+
     location = LOCATIONS.get(
         location_key,
         LOCATIONS["guild_hall"],
@@ -108,120 +111,18 @@ def prepare_arrival(
 
     embed = discord.Embed(
         title=f"{location.emoji} Arrived at {location.name}",
-        description=arrival.get(
-            "story",
-            "The dragon arrived safely.",
-        ),
+        description=story,
         color=discord.Color.green(),
     )
 
-    if encounter == "gather":
-        result = roll_resource(location_key)
-
-        embed.add_field(
-            name="🌿 Gathering Opportunity",
-            value=(
-                f"You discovered:\n\n"
-                f"{result.definition.emoji} "
-                f"**{result.definition.name}** "
-                f"×{result.quantity}"
-            ),
-            inline=False,
-        )
-
-        return embed, GatheringView(result)
-
-    embed.add_field(
-        name=ENCOUNTER_TITLES.get(
-            encounter,
-            "❓ Something Happened",
-        ),
-        value=ENCOUNTER_TEXT.get(
-            encounter,
-            "The dragon looks around curiously.",
-        ),
-        inline=False,
+    context = EncounterContext(
+        guild_id=0,
+        location_key=location_key,
+        encounter_key=encounter_key,
+        story=story,
     )
 
-    return embed, None
-
-
-class GatheringView(discord.ui.View):
-    def __init__(self, result: GatherResult):
-        super().__init__(timeout=300)
-        self.result = result
-        self.claimed = False
-
-    @discord.ui.button(
-        label="Collect",
-        emoji="🌿",
-        style=discord.ButtonStyle.success,
-        custom_id="v5_gather_collect",
-    )
-    async def collect(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button,
-    ) -> None:
-        if self.claimed:
-            await interaction.response.send_message(
-                "These resources were already collected.",
-                ephemeral=True,
-                delete_after=30,
-            )
-            return
-
-        self.claimed = True
-        button.disabled = True
-
-        inventory_item = add_item(
-            interaction.guild_id,
-            self.result.item_key,
-            self.result.quantity,
-        )
-
-        location = LOCATIONS.get(
-            self.result.location_key,
-            LOCATIONS["guild_hall"],
-        )
-
-        add_chronicle_entry(
-            interaction.guild_id,
-            entry_type="gathering",
-            title=f"Gathered {self.result.definition.name}",
-            description=(
-                f"The dragon gathered "
-                f"{self.result.quantity} "
-                f"{self.result.definition.name} "
-                f"at {location.name}."
-            ),
-            importance=1,
-            metadata={
-                "location_key": self.result.location_key,
-                "item_key": self.result.item_key,
-                "quantity": self.result.quantity,
-            },
-        )
-
-        embed = discord.Embed(
-            title="🌿 Resources Collected",
-            description=(
-                f"Added **{self.result.quantity}× "
-                f"{self.result.definition.display_name}** "
-                f"to the guild inventory.\n\n"
-                f"**New total:** {inventory_item.quantity}"
-            ),
-            color=discord.Color.green(),
-        )
-
-        await interaction.response.edit_message(
-            embed=embed,
-            view=self,
-        )
-
-        await refresh_main_panel_in_place(
-            interaction.guild,
-        )
+    return build_encounter(context, embed)
 
 
 class TravelSelect(discord.ui.Select):

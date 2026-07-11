@@ -103,5 +103,26 @@
     "emoji": "🫐",
     "rarity": "uncommon",
     "description": "Sweet berries growing deep inside the forest."
+  },
+  {
+    "key": "gold_coin",
+    "name": "Gold Coin",
+    "emoji": "🪙",
+    "rarity": "common",
+    "description": "A shiny coin accepted by travelling merchants."
+  },
+  {
+    "key": "polished_gem",
+    "name": "Polished Gem",
+    "emoji": "💎",
+    "rarity": "rare",
+    "description": "A beautifully polished gem found in an old chest."
+  },
+  {
+    "key": "ancient_key",
+    "name": "Ancient Key",
+    "emoji": "🗝️",
+    "rarity": "epic",
+    "description": "An old key engraved with unfamiliar symbols."
   }
 ]
