@@ -7,6 +7,18 @@ from systems.state.service import resolve_expired_state
 
 
 def build_view(guild_id: int) -> discord.ui.View:
+    from systems.onboarding.service import resolve_lifecycle
+    lifecycle = resolve_lifecycle(guild_id)
+    if lifecycle.stage == "egg_vote":
+        from ui.egg_view import EggVoteView
+        return EggVoteView(guild_id)
+    if lifecycle.stage == "incubating":
+        from ui.egg_view import EggCareView
+        return EggCareView(guild_id)
+    if lifecycle.stage == "hatchling":
+        from ui.egg_view import HatchlingCareView
+        return HatchlingCareView(guild_id)
+
     state_record = resolve_expired_state(guild_id)
 
     if state_record.state == DragonState.SLEEPING:

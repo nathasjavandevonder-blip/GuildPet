@@ -15,6 +15,7 @@ from systems.adventures.service import start_adventure
 from systems.chronicle.service import get_chronicle
 from systems.combat.service import start_combat
 from systems.living.service import get_living_state
+from systems.onboarding.service import locked_reason
 from systems.state.models import DragonState
 from systems.state.service import ensure_state, get_state
 from systems.world.service import world_tick
@@ -96,6 +97,7 @@ class V5TestBot(commands.Bot):
     async def setup_hook(self) -> None:
         register_event_handlers()
         applied = run_migrations()
+        await self.load_extension("cogs.ultimate_foundations")
 
         if applied:
             print("Applied migrations:", ", ".join(applied))
@@ -110,6 +112,7 @@ class V5TestBot(commands.Bot):
 
 
 intents = discord.Intents.default()
+intents.members = True
 bot = V5TestBot(command_prefix="!", intents=intents)
 
 
@@ -132,7 +135,7 @@ async def before_world_clock_task() -> None:
 
 @bot.event
 async def on_ready() -> None:
-    print(f"GuildPet v5 testbot connected as {bot.user}")
+    print(f"GuildPet Ultimate v5.5 Foundations connected as {bot.user}")
 
 
 @bot.tree.command(
@@ -191,6 +194,10 @@ async def v5refresh(interaction: discord.Interaction) -> None:
     description="Choose an interactive v5 adventure.",
 )
 async def v5adventure(interaction: discord.Interaction) -> None:
+    reason = locked_reason(interaction.guild_id, "travel")
+    if reason:
+        await interaction.response.send_message(f"🔒 {reason}", ephemeral=True, delete_after=45)
+        return
     state = get_state(interaction.guild_id)
 
     if state.state != DragonState.IDLE:
@@ -214,6 +221,10 @@ async def v5adventure(interaction: discord.Interaction) -> None:
     description="Start a training combat encounter.",
 )
 async def v5combat(interaction: discord.Interaction) -> None:
+    reason = locked_reason(interaction.guild_id, "combat")
+    if reason:
+        await interaction.response.send_message(f"🔒 {reason}", ephemeral=True, delete_after=45)
+        return
     state = get_state(interaction.guild_id)
 
     if state.state != DragonState.IDLE:

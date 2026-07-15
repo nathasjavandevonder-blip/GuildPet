@@ -131,7 +131,7 @@ async def move_main_panel_to_bottom(
     return message
 
 
-async def refresh_main_panel_in_place(
+async def _refresh_main_panel_unlocked(
     guild: discord.Guild,
 ) -> discord.Message | None:
     record = get_panel_record(guild.id)
@@ -169,6 +169,15 @@ async def refresh_main_panel_in_place(
         AttributeError,
     ):
         return None
+
+
+async def refresh_main_panel_in_place(
+    guild: discord.Guild,
+) -> discord.Message | None:
+    """Refresh through the per-guild coordinator to avoid overlapping edits."""
+    from core.refresh_engine import refresh_engine
+
+    return await refresh_engine.refresh(guild)
 
 
 async def restore_registered_panels(
