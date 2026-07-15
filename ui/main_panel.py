@@ -4,13 +4,11 @@ import discord
 
 from core.dashboard_renderer import DashboardRenderer
 from core.dragon_service import service
+from core.guild_settings import get_guild_language
 
 
 def build_main_embed(guild_id: int) -> discord.Embed:
-    """Build the single permanent GuildPet dashboard.
-
-    All stage-specific gameplay remains in the view layer, while the dashboard
-    itself now reads from one central DragonStatus model.
-    """
+    """Build the single permanent GuildPet dashboard."""
     status = service.status(guild_id)
-    return DashboardRenderer(status).build()
+    language = get_guild_language(guild_id)
+    return DashboardRenderer(status, language).build()

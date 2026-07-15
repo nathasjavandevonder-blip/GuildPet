@@ -3,6 +3,7 @@ from __future__ import annotations
 import discord
 
 from core.dragon_status import DragonStatus
+from core.i18n import DEFAULT_LOCALE
 
 
 STAGE_COLORS = {
@@ -25,8 +26,13 @@ def progress_bar(value: int, *, blocks: int = 10) -> str:
 
 
 class DashboardRenderer:
-    def __init__(self, status: DragonStatus):
+    def __init__(
+        self,
+        status: DragonStatus,
+        locale: str = DEFAULT_LOCALE,
+    ) -> None:
         self.status = status
+        self.locale = locale
 
     def build(self) -> discord.Embed:
         status = self.status

@@ -105,7 +105,6 @@ class V5TestBot(commands.Bot):
                 str(interaction.locale) if interaction.locale else None,
             )
 
-        await super().on_interaction(interaction)
 
     async def setup_hook(self) -> None:
         register_event_handlers()
