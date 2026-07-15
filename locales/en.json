@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "name": "English",
+    "native_name": "English"
+  },
+  "dashboard": {
+    "title": "🐉 GuildPet Ultimate",
+    "subtitle": "Raise a Dragon. Build a Legacy.",
+    "today_thought": "💬 Today's Thought",
+    "dragon_status": "🐲 Dragon Status",
+    "world": "🌍 World",
+    "journey": "🔓 Journey",
+    "latest_memories": "📖 Latest Memories",
+    "waiting_memory": "The dragon is waiting for the guild's first new memory.",
+    "footer": "GuildPet Ultimate • Dashboard Foundation v5.5.3"
+  },
+  "button": {
+    "feed": "Feed",
+    "play": "Play",
+    "rest": "Rest",
+    "bond": "Bond",
+    "story": "Story",
+    "inventory": "Inventory",
+    "combat": "Combat",
+    "travel": "Travel",
+    "lair": "Lair",
+    "diary": "Diary",
+    "manage": "Manage",
+    "language": "Language"
+  },
+  "stat": {
+    "bond": "Bond",
+    "hunger": "Hunger",
+    "energy": "Energy",
+    "happiness": "Happiness",
+    "cleanliness": "Cleanliness",
+    "growth": "Growth",
+    "mood": "Mood",
+    "state": "State",
+    "activity": "Activity",
+    "personality": "Personality"
+  },
+  "thought": {
+    "egg_vote": "Which ancient spirit will our guild choose?",
+    "incubating": "I can hear you through the shell... please stay close.",
+    "hatchling": "The world feels enormous, but this guild feels safe.",
+    "hungry": "My tummy is rumbling. Did someone bring a snack?",
+    "sleepy": "I think a warm, quiet nap would be wonderful.",
+    "lonely": "Could someone stay with me for a little while?",
+    "dirty": "I may have explored somewhere a little too muddy...",
+    "happy": "I cannot wait to see what our guild does today!",
+    "default": "I wonder what lies beyond our home..."
+  }
+}

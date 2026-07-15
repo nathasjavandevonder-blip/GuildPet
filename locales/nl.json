@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "name": "Dutch",
+    "native_name": "Nederlands"
+  },
+  "dashboard": {
+    "title": "🐉 GuildPet Ultimate",
+    "subtitle": "Breng samen een draak groot. Bouw een nalatenschap.",
+    "today_thought": "💬 Gedachte van vandaag",
+    "dragon_status": "🐲 Draakstatus",
+    "world": "🌍 Wereld",
+    "journey": "🔓 Reis",
+    "latest_memories": "📖 Laatste herinneringen",
+    "waiting_memory": "De draak wacht op de eerste nieuwe herinnering van de guild.",
+    "footer": "GuildPet Ultimate • Dashboard Foundation v5.5.3"
+  },
+  "button": {
+    "feed": "Voeren",
+    "play": "Spelen",
+    "rest": "Rusten",
+    "bond": "Band opbouwen",
+    "story": "Verhaal",
+    "inventory": "Inventaris",
+    "combat": "Gevecht",
+    "travel": "Reizen",
+    "lair": "Drakenhol",
+    "diary": "Dagboek",
+    "manage": "Beheren",
+    "language": "Taal"
+  },
+  "stat": {
+    "bond": "Band",
+    "hunger": "Honger",
+    "energy": "Energie",
+    "happiness": "Geluk",
+    "cleanliness": "Netheid",
+    "growth": "Groei",
+    "mood": "Stemming",
+    "state": "Toestand",
+    "activity": "Activiteit",
+    "personality": "Persoonlijkheid"
+  },
+  "thought": {
+    "egg_vote": "Welke oeroude geest zal onze guild kiezen?",
+    "incubating": "Ik kan jullie door de schaal heen horen... blijf alsjeblieft dichtbij.",
+    "hatchling": "De wereld voelt enorm, maar bij deze guild voel ik me veilig.",
+    "hungry": "Mijn buikje rommelt. Heeft iemand iets lekkers meegebracht?",
+    "sleepy": "Een warm en rustig dutje zou nu heerlijk zijn.",
+    "lonely": "Wil iemand even bij me blijven?",
+    "dirty": "Misschien heb ik ergens gespeeld waar het iets te modderig was...",
+    "happy": "Ik kan niet wachten om te zien wat onze guild vandaag gaat doen!",
+    "default": "Ik vraag me af wat er voorbij ons thuis ligt..."
+  }
+}
