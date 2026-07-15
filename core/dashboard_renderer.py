@@ -3,7 +3,7 @@ from __future__ import annotations
 import discord
 
 from core.dragon_status import DragonStatus
-from core.i18n import DEFAULT_LOCALE
+from core.i18n import DEFAULT_LOCALE, tr
 
 
 STAGE_COLORS = {
@@ -34,71 +34,86 @@ class DashboardRenderer:
         self.status = status
         self.locale = locale
 
+    def text(self, key: str, **kwargs: object) -> str:
+        return tr(self.locale, key, **kwargs)
+
     def build(self) -> discord.Embed:
         status = self.status
+
         embed = discord.Embed(
-            title="🐉 GuildPet Ultimate",
+            title=self.text("dashboard.title"),
             description=(
-                "*Raise a Dragon. Build a Legacy.*\n\n"
+                f"*{self.text('dashboard.subtitle')}*\n\n"
                 f"## {status.name}\n"
-                f"**{status.stage_label}** • Level {status.level}\n"
+                f"**{status.stage_label}** • "
+                f"{self.text('dashboard.level')} {status.level}\n"
                 f"*{status.title}*"
             ),
-            color=STAGE_COLORS.get(status.stage, discord.Color.blurple()),
+            color=STAGE_COLORS.get(
+                status.stage,
+                discord.Color.blurple(),
+            ),
         )
 
         embed.add_field(
-            name="💬 Today's Thought",
+            name=self.text("dashboard.today_thought"),
             value=f'“{status.thought}”',
             inline=False,
         )
 
         embed.add_field(
-            name="❤️ Bond",
+            name=f"❤️ {self.text('stat.bond')}",
             value=progress_bar(status.bond),
             inline=True,
         )
         embed.add_field(
-            name="🍖 Hunger",
+            name=f"🍖 {self.text('stat.hunger')}",
             value=progress_bar(status.hunger),
             inline=True,
         )
         embed.add_field(
-            name="⚡ Energy",
+            name=f"⚡ {self.text('stat.energy')}",
             value=progress_bar(status.energy),
             inline=True,
         )
         embed.add_field(
-            name="😊 Happiness",
+            name=f"😊 {self.text('stat.happiness')}",
             value=progress_bar(status.happiness),
             inline=True,
         )
         embed.add_field(
-            name="🛁 Cleanliness",
+            name=f"🛁 {self.text('stat.cleanliness')}",
             value=progress_bar(status.cleanliness),
             inline=True,
         )
         embed.add_field(
-            name="⭐ Growth",
+            name=f"⭐ {self.text('stat.growth')}",
             value=progress_bar(status.growth),
             inline=True,
         )
 
         embed.add_field(
-            name="🐲 Dragon Status",
+            name=self.text("dashboard.dragon_status"),
             value=(
-                f"**Mood:** {status.mood.title()}\n"
-                f"**State:** {status.state_label}\n"
-                f"**Activity:** {status.activity.title()}\n"
-                f"**Personality:** {status.personality}"
+                f"**{self.text('stat.mood')}:** "
+                f"{status.mood.title()}\n"
+                f"**{self.text('stat.state')}:** "
+                f"{status.state_label}\n"
+                f"**{self.text('stat.activity')}:** "
+                f"{status.activity.title()}\n"
+                f"**{self.text('stat.personality')}:** "
+                f"{status.personality}"
             ),
             inline=True,
         )
+
         embed.add_field(
-            name="🌍 World",
+            name=self.text("dashboard.world"),
             value=(
-                f"{status.location_emoji} **{status.location_name}**\n"
-                f"{status.weather_emoji} {status.weather_name}\n"
+                f"{status.location_emoji} "
+                f"**{status.location_name}**\n"
+                f"{status.weather_emoji} "
+                f"{status.weather_name}\n"
                 f"🕒 {status.time_period.title()}\n"
                 f"🍂 {status.season.title()}"
             ),
@@ -106,27 +121,40 @@ class DashboardRenderer:
         )
 
         if status.stage == "egg_vote":
-            journey = "The guild is choosing which Ancient Egg to protect."
+            journey = self.text("dashboard.journey_egg_vote")
         elif status.stage == "incubating":
-            egg = (status.selected_egg or "ancient").replace("_", " ").title()
-            journey = f"The **{egg} Egg** is being cared for by the guild."
+            egg = (
+                status.selected_egg or "ancient"
+            ).replace("_", " ").title()
+            journey = self.text(
+                "dashboard.journey_incubating",
+                egg=egg,
+            )
         elif status.stage == "hatchling":
-            journey = "Combat and travel remain locked while the hatchling grows."
+            journey = self.text("dashboard.journey_hatchling")
         else:
-            journey = "New actions unlock naturally as the dragon grows."
+            journey = self.text("dashboard.journey_growing")
 
-        embed.add_field(name="🔓 Journey", value=journey, inline=False)
+        embed.add_field(
+            name=self.text("dashboard.journey"),
+            value=journey,
+            inline=False,
+        )
 
         activities = status.recent_activity or (
-            "The dragon is waiting for the guild's first new memory.",
+            self.text("dashboard.waiting_memory"),
         )
+
         embed.add_field(
-            name="📖 Latest Memories",
-            value="\n".join(f"• {item}" for item in activities),
+            name=self.text("dashboard.latest_memories"),
+            value="\n".join(
+                f"• {item}" for item in activities
+            ),
             inline=False,
         )
 
         embed.set_footer(
-            text="GuildPet Ultimate • Dashboard Foundation v5.5.3"
+            text=self.text("dashboard.footer"),
         )
+
         return embed

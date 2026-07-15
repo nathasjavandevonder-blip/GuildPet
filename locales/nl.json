@@ -6,12 +6,17 @@
   "dashboard": {
     "title": "🐉 GuildPet Ultimate",
     "subtitle": "Breng samen een draak groot. Bouw een nalatenschap.",
+    "level": "Niveau",
     "today_thought": "💬 Gedachte van vandaag",
     "dragon_status": "🐲 Draakstatus",
     "world": "🌍 Wereld",
     "journey": "🔓 Reis",
     "latest_memories": "📖 Laatste herinneringen",
     "waiting_memory": "De draak wacht op de eerste nieuwe herinnering van de guild.",
+    "journey_egg_vote": "De guild kiest welk Oeroud Ei beschermd zal worden.",
+    "journey_incubating": "Het **{egg} Ei** wordt door de guild verzorgd.",
+    "journey_hatchling": "Gevechten en reizen blijven vergrendeld terwijl de jonge draak groeit.",
+    "journey_growing": "Nieuwe acties worden vanzelf ontgrendeld terwijl de draak groeit.",
     "footer": "GuildPet Ultimate • Dashboard Foundation v5.5.3"
   },
   "button": {

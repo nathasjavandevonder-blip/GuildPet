@@ -12,7 +12,12 @@
     "journey": "🔓 Journey",
     "latest_memories": "📖 Latest Memories",
     "waiting_memory": "The dragon is waiting for the guild's first new memory.",
-    "footer": "GuildPet Ultimate • Dashboard Foundation v5.5.3"
+    "footer": "GuildPet Ultimate • Dashboard Foundation v5.5.3",
+    "level": "Level",
+    "journey_egg_vote": "The guild is choosing which Ancient Egg to protect.",
+    "journey_incubating": "The **{egg} Egg** is being cared for by the guild.",
+    "journey_hatchling": "Combat and travel remain locked while the hatchling grows.",
+    "journey_growing": "New actions unlock naturally as the dragon grows."
   },
   "button": {
     "feed": "Feed",
