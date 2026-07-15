@@ -8,6 +8,7 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
 from core.config import BASE_DIR
+from core.user_settings import get_or_create_language
 from migrations.manager import run_migrations
 from systems.events import register_event_handlers
 from systems.adventures.catalog import load_adventures
@@ -94,6 +95,18 @@ class AdventureStartView(discord.ui.View):
 
 
 class V5TestBot(commands.Bot):
+    async def on_interaction(
+        self,
+        interaction: discord.Interaction,
+    ) -> None:
+        if interaction.user is not None:
+            get_or_create_language(
+                interaction.user.id,
+                str(interaction.locale) if interaction.locale else None,
+            )
+
+        await super().on_interaction(interaction)
+
     async def setup_hook(self) -> None:
         register_event_handlers()
         applied = run_migrations()
