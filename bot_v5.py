@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 
 from core.config import BASE_DIR
 from core.guild_settings import set_guild_language
+from core.i18n import available_languages, language_choices, locale_metadata
 from core.user_settings import get_or_create_language
 from migrations.manager import run_migrations
 from systems.events import register_event_handlers
@@ -180,21 +181,28 @@ async def v5panel(interaction: discord.Interaction) -> None:
 )
 @app_commands.guild_only()
 @app_commands.checks.has_permissions(manage_guild=True)
-@app_commands.choices(
-    language=[
-        app_commands.Choice(name="English", value="en"),
-        app_commands.Choice(name="Nederlands", value="nl"),
-    ]
+@app_commands.autocomplete(
+    language=guild_language_autocomplete,
 )
 async def guildlanguage(
     interaction: discord.Interaction,
-    language: app_commands.Choice[str],
+    language: str,
 ) -> None:
     await interaction.response.defer(ephemeral=True)
 
+    normalized = language.strip().replace("_", "-")
+    installed_languages = available_languages()
+
+    if normalized not in installed_languages:
+        await interaction.followup.send(
+            "❌ That language is not installed.",
+            ephemeral=True,
+        )
+        return
+
     selected = set_guild_language(
         interaction.guild_id,
-        language.value,
+        normalized,
     )
 
     message = await refresh_main_panel_in_place(
@@ -207,15 +215,47 @@ async def guildlanguage(
             interaction.channel,
         )
 
-    confirmations = {
-        "en": "🌐 The GuildPet dashboard language is now **English**.",
-        "nl": "🌐 De taal van het GuildPet-dashboard is nu **Nederlands**.",
-    }
+    meta = locale_metadata(selected)
+
+    if meta["native_name"].casefold() == meta["name"].casefold():
+        language_name = meta["native_name"]
+    else:
+        language_name = (
+            f'{meta["native_name"]} ({meta["name"]})'
+        )
 
     await interaction.followup.send(
-        confirmations[selected],
+        f"🌐 GuildPet dashboard language set to **{language_name}**.",
         ephemeral=True,
     )
+
+
+async def guild_language_autocomplete(
+    interaction: discord.Interaction,
+    current: str,
+) -> list[app_commands.Choice[str]]:
+    del interaction
+
+    search = current.casefold().strip()
+    matches: list[app_commands.Choice[str]] = []
+
+    for display_name, locale in language_choices():
+        searchable = f"{display_name} {locale}".casefold()
+
+        if search and search not in searchable:
+            continue
+
+        matches.append(
+            app_commands.Choice(
+                name=display_name,
+                value=locale,
+            )
+        )
+
+        if len(matches) >= 25:
+            break
+
+    return matches
 
 
 @guildlanguage.error

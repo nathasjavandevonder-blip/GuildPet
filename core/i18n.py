@@ -140,5 +140,47 @@ def available_languages() -> tuple[str, ...]:
     return _service.available_languages()
 
 
+def locale_metadata(locale: str | None) -> dict[str, str]:
+    normalized = _service.normalize_locale(locale)
+    payload = _service.load_locale(normalized)
+    meta = payload.get("meta", {})
+
+    if not isinstance(meta, dict):
+        return {
+            "name": normalized,
+            "native_name": normalized,
+        }
+
+    name = meta.get("name")
+    native_name = meta.get("native_name")
+
+    return {
+        "name": name if isinstance(name, str) and name else normalized,
+        "native_name": (
+            native_name
+            if isinstance(native_name, str) and native_name
+            else normalized
+        ),
+    }
+
+
+def language_choices() -> tuple[tuple[str, str], ...]:
+    choices: list[tuple[str, str]] = []
+
+    for locale in available_languages():
+        meta = locale_metadata(locale)
+        native_name = meta["native_name"]
+        english_name = meta["name"]
+
+        if native_name.casefold() == english_name.casefold():
+            display_name = native_name
+        else:
+            display_name = f"{native_name} ({english_name})"
+
+        choices.append((display_name[:100], locale))
+
+    return tuple(choices)
+
+
 def reload_locales() -> None:
     _service.reload_locales()
