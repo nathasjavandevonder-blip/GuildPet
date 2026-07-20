@@ -8,6 +8,7 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
 from core.config import BASE_DIR
+from core.guild_settings import set_guild_language
 from core.user_settings import get_or_create_language
 from migrations.manager import run_migrations
 from systems.events import register_event_handlers
@@ -171,6 +172,75 @@ async def v5panel(interaction: discord.Interaction) -> None:
         "🐉 The GuildPet panel was moved to the bottom.",
         ephemeral=True,
     )
+
+
+@bot.tree.command(
+    name="guildlanguage",
+    description="Choose the language used by the shared GuildPet dashboard.",
+)
+@app_commands.guild_only()
+@app_commands.checks.has_permissions(manage_guild=True)
+@app_commands.choices(
+    language=[
+        app_commands.Choice(name="English", value="en"),
+        app_commands.Choice(name="Nederlands", value="nl"),
+    ]
+)
+async def guildlanguage(
+    interaction: discord.Interaction,
+    language: app_commands.Choice[str],
+) -> None:
+    await interaction.response.defer(ephemeral=True)
+
+    selected = set_guild_language(
+        interaction.guild_id,
+        language.value,
+    )
+
+    message = await refresh_main_panel_in_place(
+        interaction.guild,
+    )
+
+    if message is None:
+        await move_main_panel_to_bottom(
+            interaction.guild,
+            interaction.channel,
+        )
+
+    confirmations = {
+        "en": "🌐 The GuildPet dashboard language is now **English**.",
+        "nl": "🌐 De taal van het GuildPet-dashboard is nu **Nederlands**.",
+    }
+
+    await interaction.followup.send(
+        confirmations[selected],
+        ephemeral=True,
+    )
+
+
+@guildlanguage.error
+async def guildlanguage_error(
+    interaction: discord.Interaction,
+    error: app_commands.AppCommandError,
+) -> None:
+    if isinstance(error, app_commands.MissingPermissions):
+        message = (
+            "❌ You need the **Manage Server** permission "
+            "to change the dashboard language."
+        )
+    else:
+        message = "❌ The dashboard language could not be changed."
+
+    if interaction.response.is_done():
+        await interaction.followup.send(
+            message,
+            ephemeral=True,
+        )
+    else:
+        await interaction.response.send_message(
+            message,
+            ephemeral=True,
+        )
 
 
 @bot.tree.command(
